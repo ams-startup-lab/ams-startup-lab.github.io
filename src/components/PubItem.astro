@@ -2,9 +2,13 @@
 import { pubMeta } from '../lib';
 const { pub } = Astro.props;
 const d = pub.data;
+const [venue] = pubMeta(d).split(' · ');
 ---
-<li class="item" data-year={d.year} data-members={d.members.join(' ')}>
-  <h3><a href={d.url} rel="noopener">{d.title}</a></h3>
-  <p class="meta">{d.authors}</p>
-  <p class="meta"><em>{pubMeta(d).split(' · ')[0]}</em> · {pubMeta(d).split(' · ')[1]}</p>
+<li class="row" data-year={d.year} data-members={d.members.join(' ')}>
+  <div class="mono lead">{d.status === 'in_press' ? 'In press' : d.year}</div>
+  <div>
+    <h3><a href={d.url} rel="noopener">{d.title}</a></h3>
+    <p class="meta">{d.authors}</p>
+  </div>
+  <div class="mono side">{venue}</div>
 </li>

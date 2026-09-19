@@ -9,41 +9,50 @@ const tagged = new Set(pubs.flatMap((p) => p.data.members));
 const people = [...(await members()).current, ...(await members()).alumni].filter((m) => tagged.has(m.id));
 ---
 <Base title="Publications" description={intro.text}>
-  <section class="page-head"><div class="inner"><h1>{intro.heading}</h1><p>{intro.text}</p></div></section>
-  <section><div class="inner">
-    <form class="filters" aria-label="Filter publications">
-      <label>Year
-        <select name="year"><option value="">All</option>{years.map((y) => <option>{y}</option>)}</select>
-      </label>
+  <section class="page-head"><h1>{intro.heading}</h1><p>{intro.text}</p></section>
+  <section class="flush">
+    <form class="bar mono filters" aria-label="Filter publications">
+      <span class="count" aria-live="polite"></span>
+      <span class="pills" role="group" aria-label="Year">
+        <button type="button" data-year="" aria-pressed="true">All</button>
+        {years.map((y) => <button type="button" data-year={y} aria-pressed="false">{y}</button>)}
+      </span>
       <label>Member
         <select name="member"><option value="">All</option>{people.map((m) => <option value={m.id}>{m.data.name}</option>)}</select>
       </label>
-      <span class="count" aria-live="polite"></span>
     </form>
     <ul id="pubs">{pubs.map((pub) => <PubItem pub={pub} />)}</ul>
-  </div></section>
+  </section>
 </Base>
 
 <script>
   const form = document.querySelector<HTMLFormElement>('.filters')!;
-  const items = [...document.querySelectorAll<HTMLElement>('#pubs .item')];
+  const items = [...document.querySelectorAll<HTMLElement>('#pubs .row')];
+  const pills = [...form.querySelectorAll<HTMLButtonElement>('.pills button')];
   const count = form.querySelector('.count')!;
+  let year = '';
   const apply = () => {
-    const year = form.year.value, member = form.member.value;
+    const member = form.member.value;
     let shown = 0;
     for (const li of items) {
       const ok = (!year || li.dataset.year === year) && (!member || li.dataset.members!.split(' ').includes(member));
       li.hidden = !ok;
       if (ok) shown++;
     }
-    count.textContent = `${shown} of ${items.length}`;
+    count.textContent = `Publications (${shown})`;
   };
+  for (const b of pills) b.addEventListener('click', () => {
+    year = b.dataset.year!;
+    for (const x of pills) x.setAttribute('aria-pressed', String(x === b));
+    apply();
+  });
   form.addEventListener('change', apply);
   apply();
 </script>
 
 <style>
-  .filters { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; font-family: var(--sans); font-size: 14px; padding-bottom: 20px; }
-  .filters select { font: inherit; margin-left: 8px; padding: 6px 8px; background: var(--card); color: var(--ink); border: 1px solid var(--rule); border-radius: 4px; max-width: 60vw; }
-  .count { color: var(--muted); margin-left: auto; }
+  .pills { display: flex; flex-wrap: wrap; gap: 6px; margin-left: auto; }
+  .pills button, .filters select { font: inherit; text-transform: inherit; letter-spacing: inherit; color: var(--ink); background: transparent; border: 1.5px solid var(--ink); border-radius: 999px; padding: 4px 12px; cursor: pointer; }
+  .pills button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+  .filters select { margin-left: 8px; max-width: 60vw; }
 </style>

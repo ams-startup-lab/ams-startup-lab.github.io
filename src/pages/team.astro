@@ -12,10 +12,10 @@ const groups = [
 const initials = (name: string) => name.split(' ').filter((w) => /^[A-Z]/.test(w)).map((w) => w[0]).slice(0, 2).join('');
 ---
 <Base title="Team" description={intro.text}>
-  <section class="page-head"><div class="inner"><h1>{intro.heading}</h1><p>{intro.text}</p></div></section>
+  <section class="page-head"><h1>{intro.heading}</h1><p>{intro.text}</p></section>
   {groups.filter(([, list]) => list.length > 0).map(([label, list]) => (
-    <section class="group"><div class="inner">
-      <h2 class="label">{label}</h2>
+    <section class="group flush">
+      <div class="bar mono"><h2>{label}</h2><span>{list.length}</span></div>
       <ul class="people">
         {list.map((m) => (
           <li>
@@ -25,7 +25,7 @@ const initials = (name: string) => name.split(' ').filter((w) => /^[A-Z]/.test(w
             <div>
               <h3>{m.data.name}</h3>
               <p class="meta">{m.data.title}{m.data.lab_role && ` · ${m.data.lab_role}`}</p>
-              <p class="links">
+              <p class="links mono">
                 {m.data.uva_url && <a href={m.data.uva_url}>UvA profile</a>}
                 {m.data.scholar_url && <a href={m.data.scholar_url}>Google Scholar</a>}
                 {m.data.orcid && <a href={`https://orcid.org/${m.data.orcid}`}>ORCID</a>}
@@ -35,16 +35,16 @@ const initials = (name: string) => name.split(' ').filter((w) => /^[A-Z]/.test(w
           </li>
         ))}
       </ul>
-    </div></section>
+    </section>
   ))}
 </Base>
 
 <style>
-  .group { padding-bottom: 40px; }
-  .people { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 0 40px; }
-  .people li { display: flex; gap: 16px; align-items: flex-start; padding: 20px 0; border-top: 1px solid var(--rule); }
-  .people h3 { font-size: 20px; font-weight: 400; line-height: 1.25; }
-  .avatar, .people img { flex: none; width: 72px; height: 72px; border-radius: 50%; object-fit: cover; }
-  .avatar { display: grid; place-items: center; background: var(--card); border: 1px solid var(--rule); font-family: var(--sans); font-size: 20px; color: var(--muted); }
-  .links { font-family: var(--sans); font-size: 13px; margin-top: 8px; display: flex; flex-wrap: wrap; gap: 4px 14px; }
+  .group + .group .bar { border-top: var(--line); margin-top: -1px; }
+  .people { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); }
+  .people li { display: flex; gap: 16px; align-items: flex-start; padding: 22px var(--gutter); border-bottom: 1px solid var(--rule); }
+  .people h3 { font-size: 18px; font-weight: 700; line-height: 1.25; }
+  .avatar, .people img { flex: none; width: 64px; height: 64px; object-fit: cover; border: var(--line); }
+  .avatar { display: grid; place-items: center; background: var(--hl); color: var(--hl-ink); font-family: var(--monof); font-size: 16px; }
+  .links { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 11px; }
 </style>

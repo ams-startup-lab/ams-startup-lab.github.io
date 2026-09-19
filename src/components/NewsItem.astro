@@ -1,10 +1,12 @@
 ---
-import { fmtDate } from '../lib';
 const { item, summary = false } = Astro.props;
 const d = item.data;
 ---
-<li class="item">
-  <h3><a href={d.url} rel="noopener">{d.title}</a></h3>
-  <p class="meta"><time datetime={d.date.toISOString().slice(0, 10)}>{fmtDate(d.date)}</time> · {d.outlet}</p>
-  {summary && d.summary && <p class="meta">{d.summary}</p>}
+<li class="row">
+  <div class="mono lead"><time datetime={d.date.toISOString().slice(0, 10)}>{d.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' })}</time></div>
+  <div>
+    <h3><a href={d.url} rel="noopener">{d.title}</a></h3>
+    {summary && d.summary && <p class="meta">{d.summary}</p>}
+  </div>
+  <div class="mono side">{d.outlet}</div>
 </li>
