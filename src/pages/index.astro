@@ -33,6 +33,12 @@ const latest = allNews[0];
     </div>
   </section>
 
+  <section class="block">
+    <h2 class="label">{site.about.heading}</h2>
+    <div class="prose">{site.about.text.map((t: string) => <p>{t}</p>)}</div>
+    <p class="mono more"><a href="/team">Meet the team →</a></p>
+  </section>
+
   <section class="flush">
     <div class="bar mono"><h2>Latest publications</h2><a href="/publications">All {allPubs.length} →</a></div>
     <ul>{allPubs.slice(0, 5).map((pub) => <PubItem pub={pub} />)}</ul>
@@ -43,13 +49,7 @@ const latest = allNews[0];
     <ul>{allNews.slice(0, 4).map((item) => <NewsItem item={item} />)}</ul>
   </section>
 
-  <section class="block top">
-    <h2 class="label">{site.about.heading}</h2>
-    <div class="prose">{site.about.text.map((t: string) => <p>{t}</p>)}</div>
-    <p class="mono more"><a href="/team">Meet the team →</a></p>
-  </section>
-
-  <section id="contact" class="block">
+  <section id="contact" class="block top">
     <h2 class="label">{site.contact.heading}</h2>
     <div class="prose">
       <p>{site.contact.text}</p>

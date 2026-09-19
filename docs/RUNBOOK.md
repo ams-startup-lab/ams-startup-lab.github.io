@@ -28,3 +28,6 @@ An issue "Weekly update routine has not run for 10 days" appears. Open claude.ai
 
 ## Build locally
 `npm ci`, then `npm run dev`. Pipeline: `pip install -r pipeline/requirements.txt`, then `python pipeline/fetch_openalex.py`.
+
+## Member photos
+Photos live in `public/team/<slug>.jpg` (320 by 320 pixels) and are linked with `photo: /team/<slug>.jpg` in the member file. Members supplied their own photos for the website. For a new member, ask them for a photo. A member without a photo gets an initials tile. The routine never adds photos.
