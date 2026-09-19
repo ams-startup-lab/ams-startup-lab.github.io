@@ -4,7 +4,7 @@ Everything needed to run this website is in this repository, except three accoun
 
 | What | Where | How to transfer |
 | --- | --- | --- |
-| Code, data, workflows | GitHub organization (see README for the name) | Current owner adds you as organization **Owner** |
+| Code, data, workflows | GitHub organization `ams-startup-lab`, repository `site` | Current owner adds you as organization **Owner** |
 | Domain `ams-startup-lab.org` | Registrar account (Wix at the time of writing) | Transfer the domain to your registrar account, or receive the login |
 | Weekly routine | The current maintainer's Claude account, claude.ai/code, Routines | Routines cannot be transferred. Create a new one in your account (below), then the old owner deletes theirs |
 
@@ -28,7 +28,7 @@ The same prompt and scripts can run from a scheduled GitHub Actions workflow usi
 
 ## DNS records (GitHub Pages)
 - Apex `A`: 185.199.108.153, 185.199.109.153, 185.199.110.153, 185.199.111.153
-- `www` `CNAME`: `<organization>.github.io`
+- `www` `CNAME`: `ams-startup-lab.github.io`
 - File `public/CNAME` holds `www.ams-startup-lab.org`.
 
 ## Costs
