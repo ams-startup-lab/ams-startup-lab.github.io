@@ -1,0 +1,88 @@
+---
+import { siteTexts } from '../lib';
+interface Props { title?: string; description?: string }
+const site = await siteTexts();
+const { title, description = site.hero.tagline } = Astro.props;
+const pageTitle = title ? `${title} | ${site.name}` : site.name;
+const nav = [
+  ['Team', '/team'], ['Publications', '/publications'], ['Projects', '/projects'],
+  ['News', '/news'], ['Events', '/events'], ['Contact', '/#contact'],
+];
+const here = Astro.url.pathname.replace(/\/$/, '') || '/';
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="site">
+      <a class="logo" href="/">{site.name}</a>
+      <nav aria-label="Main">
+        <ul>
+          {nav.map(([label, href]) => (
+            <li><a href={href} aria-current={here === href ? 'page' : undefined}>{label}</a></li>
+          ))}
+        </ul>
+      </nav>
+    </header>
+    <main id="main"><slot /></main>
+    <footer class="site">
+      <p>© {new Date().getFullYear()} {site.name} · University of Amsterdam, Amsterdam Business School</p>
+      <p>{site.contact.address}</p>
+    </footer>
+  </body>
+</html>
+
+<style is:global>
+  :root {
+    --bg: #fbfaf7; --ink: #1a1a1a; --muted: #5f5f5f; --rule: #dcd9d2; --accent: #b3261e; --card: #fff;
+    --serif: "Iowan Old Style", "Palatino Linotype", Georgia, "Times New Roman", serif;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --gutter: clamp(16px, 4vw, 40px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #151413; --ink: #ece9e2; --muted: #a39f96; --rule: #34322e; --accent: #ff8a7a; --card: #1e1d1b; }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--serif); font-size: 18px; line-height: 1.6; }
+  a { color: inherit; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+  a:hover { color: var(--accent); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  h1, h2, h3, p, ul { margin: 0; }
+  ul { list-style: none; padding: 0; }
+  .skip { position: absolute; left: -999px; }
+  .skip:focus { left: 8px; top: 8px; background: var(--card); padding: 8px 12px; z-index: 10; }
+
+  header.site, footer.site, main > * { padding-left: var(--gutter); padding-right: var(--gutter); }
+  header.site, footer.site, main > * > .inner, main > .inner { max-width: 1120px; margin-left: auto; margin-right: auto; }
+  header.site { display: flex; justify-content: space-between; align-items: baseline; gap: 12px 24px; flex-wrap: wrap; padding-top: 26px; padding-bottom: 22px; border-bottom: 1px solid var(--ink); }
+  .logo { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; text-decoration: none; }
+  header.site nav ul { display: flex; flex-wrap: wrap; gap: 6px 22px; }
+  header.site nav a { font-family: var(--sans); font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; text-decoration: none; }
+  header.site nav a[aria-current="page"] { color: var(--accent); }
+  footer.site { margin-top: 80px; padding-top: 28px; padding-bottom: 40px; border-top: 1px solid var(--ink); font-family: var(--sans); font-size: 14px; color: var(--muted); }
+
+  .page-head { padding-top: 56px; padding-bottom: 36px; }
+  .page-head h1, .hero h1 { font-weight: 400; letter-spacing: -0.02em; line-height: 1.08; }
+  .page-head h1 { font-size: clamp(32px, 4.5vw, 48px); }
+  .page-head p { color: var(--muted); margin-top: 10px; }
+  .label { font-family: var(--sans); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent); margin-bottom: 18px; }
+  .meta { font-family: var(--sans); font-size: 14px; color: var(--muted); margin-top: 6px; }
+  .item { padding: 18px 0; border-top: 1px solid var(--rule); }
+  .item h3 { font-size: 21px; font-weight: 400; line-height: 1.3; }
+  .item h3 a { text-decoration: none; }
+  .item h3 a:hover { text-decoration: underline; }
+  .more { display: inline-block; margin-top: 18px; font-family: var(--sans); font-size: 14px; }
+  .prose p + p { margin-top: 1em; }
+  .prose { max-width: 68ch; }
+</style>

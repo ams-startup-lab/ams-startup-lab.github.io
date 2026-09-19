@@ -1,0 +1,23 @@
+---
+import Base from '../layouts/Base.astro';
+import { siteTexts, events, fmtDate } from '../lib';
+const site = await siteTexts();
+const { upcoming, past } = await events();
+---
+<Base title="Events">
+  <section class="page-head"><div class="inner"><h1>Events</h1></div></section>
+  <section><div class="inner">
+    <h2 class="label">Upcoming</h2>
+    {upcoming.length === 0 && <p class="prose">No events planned at the moment. For questions about future events or collaboration, write to <a href={site.contact.email_href}>{site.contact.email}</a>.</p>}
+    <ul>{upcoming.map((e) => (
+      <li class="item">
+        <h3>{e.data.url ? <a href={e.data.url}>{e.data.title}</a> : e.data.title}</h3>
+        <p class="meta">{fmtDate(e.data.date)}{e.data.end_date && ` to ${fmtDate(e.data.end_date)}`}{e.data.location && ` · ${e.data.location}`}</p>
+        {e.data.description && <p class="meta">{e.data.description}</p>}
+      </li>))}</ul>
+    {past.length > 0 && <h2 class="label" style="margin-top:48px">Past events</h2>}
+    <ul>{past.map((e) => (
+      <li class="item"><h3>{e.data.url ? <a href={e.data.url}>{e.data.title}</a> : e.data.title}</h3>
+        <p class="meta">{fmtDate(e.data.date)}{e.data.location && ` · ${e.data.location}`}</p></li>))}</ul>
+  </div></section>
+</Base>

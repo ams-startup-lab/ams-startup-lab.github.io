@@ -81,4 +81,10 @@ const projects = defineCollection({
   }).strict(),
 });
 
-export const collections = { members, publications, news, events, projects };
+// Site-wide texts (hero, about, contact). Free-form on purpose.
+const site = defineCollection({
+  loader: glob({ pattern: 'site.yaml', base: './data' }),
+  schema: z.object({ name: z.string() }).passthrough(),
+});
+
+export const collections = { site, members, publications, news, events, projects };

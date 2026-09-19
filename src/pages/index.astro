@@ -1,17 +1,61 @@
 ---
-
+import Base from '../layouts/Base.astro';
+import PubItem from '../components/PubItem.astro';
+import NewsItem from '../components/NewsItem.astro';
+import { siteTexts, publications, news, events, fmtDate } from '../lib';
+const site = await siteTexts();
+const pubs = (await publications()).slice(0, 4);
+const items = (await news()).slice(0, 4);
+const next = (await events()).upcoming[0];
 ---
+<Base>
+  <section class="hero"><div class="inner">
+    <h1>Rigorous research on the <em>future of startups</em>.</h1>
+    <p>{site.hero.tagline}</p>
+    {next && (
+      <p class="next"><span class="label">Next event</span>
+        <a href="/events">{next.data.title}</a>, {fmtDate(next.data.date)}</p>
+    )}
+  </div></section>
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+  <section class="cols"><div class="inner">
+    <div>
+      <h2 class="label">Latest publications</h2>
+      <ul>{pubs.map((pub) => <PubItem pub={pub} />)}</ul>
+      <a class="more" href="/publications">All publications →</a>
+    </div>
+    <div>
+      <h2 class="label">News and media</h2>
+      <ul class="compact">{items.map((item) => <NewsItem item={item} />)}</ul>
+      <a class="more" href="/news">All news →</a>
+    </div>
+  </div></section>
+
+  <section class="about"><div class="inner">
+    <h2 class="label">{site.about.heading}</h2>
+    <div class="prose">{site.about.text.map((t: string) => <p>{t}</p>)}</div>
+    <a class="more" href="/team">Meet the team →</a>
+  </div></section>
+
+  <section id="contact" class="about"><div class="inner">
+    <h2 class="label">{site.contact.heading}</h2>
+    <div class="prose">
+      <p>{site.contact.text}</p>
+      <p><a href={site.contact.email_href}>{site.contact.email}</a><br />{site.contact.address}</p>
+    </div>
+  </div></section>
+</Base>
+
+<style>
+  .hero { padding-top: clamp(48px, 8vw, 88px); padding-bottom: clamp(40px, 6vw, 64px); border-bottom: 1px solid var(--rule); }
+  .hero h1 { font-size: clamp(36px, 5.6vw, 64px); max-width: 17ch; }
+  .hero h1 em { color: var(--accent); }
+  .hero p { margin-top: 24px; max-width: 58ch; font-size: clamp(18px, 2vw, 21px); color: var(--muted); }
+  .hero .next { font-family: var(--sans); font-size: 15px; }
+  .hero .next .label { margin-right: 10px; }
+  .cols { padding-top: 48px; padding-bottom: 24px; }
+  .cols .inner { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: clamp(32px, 5vw, 64px); }
+  .compact :global(.item h3) { font-size: 17px; }
+  .about { padding-top: 56px; }
+  @media (max-width: 760px) { .cols .inner { grid-template-columns: minmax(0, 1fr); } }
+</style>

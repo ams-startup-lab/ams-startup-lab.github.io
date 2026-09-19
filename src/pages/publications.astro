@@ -1,0 +1,49 @@
+---
+import Base from '../layouts/Base.astro';
+import PubItem from '../components/PubItem.astro';
+import { siteTexts, publications, members } from '../lib';
+const intro = (await siteTexts()).page_intros.publications;
+const pubs = await publications();
+const years = [...new Set(pubs.map((p) => p.data.year))];
+const tagged = new Set(pubs.flatMap((p) => p.data.members));
+const people = [...(await members()).current, ...(await members()).alumni].filter((m) => tagged.has(m.id));
+---
+<Base title="Publications" description={intro.text}>
+  <section class="page-head"><div class="inner"><h1>{intro.heading}</h1><p>{intro.text}</p></div></section>
+  <section><div class="inner">
+    <form class="filters" aria-label="Filter publications">
+      <label>Year
+        <select name="year"><option value="">All</option>{years.map((y) => <option>{y}</option>)}</select>
+      </label>
+      <label>Member
+        <select name="member"><option value="">All</option>{people.map((m) => <option value={m.id}>{m.data.name}</option>)}</select>
+      </label>
+      <span class="count" aria-live="polite"></span>
+    </form>
+    <ul id="pubs">{pubs.map((pub) => <PubItem pub={pub} />)}</ul>
+  </div></section>
+</Base>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('.filters')!;
+  const items = [...document.querySelectorAll<HTMLElement>('#pubs .item')];
+  const count = form.querySelector('.count')!;
+  const apply = () => {
+    const year = form.year.value, member = form.member.value;
+    let shown = 0;
+    for (const li of items) {
+      const ok = (!year || li.dataset.year === year) && (!member || li.dataset.members!.split(' ').includes(member));
+      li.hidden = !ok;
+      if (ok) shown++;
+    }
+    count.textContent = `${shown} of ${items.length}`;
+  };
+  form.addEventListener('change', apply);
+  apply();
+</script>
+
+<style>
+  .filters { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; font-family: var(--sans); font-size: 14px; padding-bottom: 20px; }
+  .filters select { font: inherit; margin-left: 8px; padding: 6px 8px; background: var(--card); color: var(--ink); border: 1px solid var(--rule); border-radius: 4px; max-width: 60vw; }
+  .count { color: var(--muted); margin-left: auto; }
+</style>

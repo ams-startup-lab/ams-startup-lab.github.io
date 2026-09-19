@@ -1,0 +1,10 @@
+---
+import Base from '../layouts/Base.astro';
+import NewsItem from '../components/NewsItem.astro';
+import { siteTexts, news } from '../lib';
+const items = await news();
+---
+<Base title="News and media" description="Amsterdam Startup Lab research in the news.">
+  <section class="page-head"><div class="inner"><h1>News and media</h1><p>Lab research in the press, and news from the lab.</p></div></section>
+  <section><div class="inner"><ul>{items.map((item) => <NewsItem item={item} summary />)}</ul></div></section>
+</Base>

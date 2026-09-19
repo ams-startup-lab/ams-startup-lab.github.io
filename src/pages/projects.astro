@@ -1,0 +1,32 @@
+---
+import Base from '../layouts/Base.astro';
+import { getCollection, render } from 'astro:content';
+import { siteTexts } from '../lib';
+const intro = (await siteTexts()).page_intros.projects;
+const people = Object.fromEntries((await getCollection('members')).map((m) => [m.id, m.data.name]));
+const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+const rendered = await Promise.all(projects.map(async (p) => ({ p, Content: (await render(p)).Content })));
+---
+<Base title="Projects" description={intro.text}>
+  <section class="page-head"><div class="inner"><h1>{intro.heading}</h1><p>{intro.text}</p></div></section>
+  <section><div class="inner">
+    {rendered.map(({ p, Content }) => (
+      <article class="item project">
+        <h2>{p.data.title}</h2>
+        <p class="meta">
+          {p.data.status === 'completed' ? 'Completed' : 'Active'}
+          {p.data.members.length > 0 && ` · ${p.data.members.map((id) => people[id] ?? id).join(', ')}`}
+          {p.data.partners.length > 0 && ` · With ${p.data.partners.join(', ')}`}
+        </p>
+        <div class="prose"><Content /></div>
+        {p.data.url && <a class="more" href={p.data.url}>More about this project →</a>}
+      </article>
+    ))}
+  </div></section>
+</Base>
+
+<style>
+  .project { padding: 32px 0; }
+  .project h2 { font-size: 28px; font-weight: 400; line-height: 1.2; letter-spacing: -0.01em; }
+  .project .prose { margin-top: 16px; }
+</style>
