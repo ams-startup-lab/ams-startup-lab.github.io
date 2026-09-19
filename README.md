@@ -1,6 +1,6 @@
 # Amsterdam Startup Lab website
 
-Source of https://www.ams-startup-lab.org. Repository: https://github.com/ams-startup-lab/site. A static site (Astro) whose content lives in `data/`. A weekly Claude routine proposes new publications, news, and events as pull requests. A person approves by merging and rejects by closing.
+Source of https://www.ams-startup-lab.org. Repository: https://github.com/ams-startup-lab/ams-startup-lab.github.io. A static site (Astro) whose content lives in `data/`. A weekly Claude routine proposes new publications, news, and events as pull requests. A person approves by merging and rejects by closing.
 
 - How it works: `docs/ARCHITECTURE.md`
 - Day-to-day tasks: `docs/RUNBOOK.md`
