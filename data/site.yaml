@@ -4,6 +4,10 @@ hero:
   tagline: The University of Amsterdam Community Hub for Collaboration with Entrepreneurship Scholars
 about:
   heading: About Us
+  labels:
+  - Who we are
+  - Our mission
+  - Work with us
   text:
   - ASL is a thriving community of entrepreneurship scholars based at the University of Amsterdam. Our work delves into the heart of startups—examining the people, processes, and environments that drive them to scale new heights or face challenging stagnation.
   - 'Our mission is simple yet powerful: To advance evidence-based discourse on the future of startups through rigorous, cutting-edge research. By partnering practitioners, policymakers, and students, we identify critical research questions and provide insights into solutions that make a real impact.'

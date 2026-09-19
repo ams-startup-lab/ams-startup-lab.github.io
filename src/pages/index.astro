@@ -33,10 +33,18 @@ const latest = allNews[0];
     </div>
   </section>
 
-  <section class="block">
-    <h2 class="label">{site.about.heading}</h2>
-    <div class="prose">{site.about.text.map((t: string) => <p>{t}</p>)}</div>
-    <p class="mono more"><a href="/team">Meet the team →</a></p>
+  <section class="about flush" aria-labelledby="about-h">
+    <h2 id="about-h" class="bar mono">{site.about.heading}</h2>
+    <div class="cols">
+      {site.about.text.map((t: string, i: number) => (
+        <div>
+          <h3 class="mono">{site.about.labels?.[i]}</h3>
+          <p>{t}</p>
+          {i === 0 && <p class="mono go"><a href="/team">Meet the team →</a></p>}
+          {i === site.about.text.length - 1 && <p class="mono go"><a href="#contact">Get in touch →</a></p>}
+        </div>
+      ))}
+    </div>
   </section>
 
   <section class="flush">
@@ -67,7 +75,19 @@ const latest = allNews[0];
   .spot h2 { font-size: clamp(20px, 2.4vw, 26px); line-height: 1.2; letter-spacing: -0.01em; margin: 12px 0 16px; }
   .spot a:hover { background: var(--hl-ink); color: var(--hl); }
   .top { border-top: var(--line); margin-top: -1px; }
-  .more { margin-top: 24px; }
+  .about { border-bottom: var(--line); }
+  .about .bar { margin: 0; font-weight: 400; }
+  .about .cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .about .cols > div { padding: 28px var(--gutter) 32px; display: flex; flex-direction: column; }
+  .about .cols > div + div { border-left: 1px solid var(--rule); }
+  .about h3 { color: var(--muted); font-weight: 400; margin-bottom: 12px; }
+  .about p { font-size: 16px; line-height: 1.6; }
+  .about .go { margin-top: auto; padding-top: 20px; font-size: 12px; }
+  @media (max-width: 900px) {
+    .about .cols { grid-template-columns: minmax(0, 1fr); }
+    .about .cols > div + div { border-left: 0; border-top: 1px solid var(--rule); }
+    .about .cols > div { padding-top: 22px; padding-bottom: 24px; }
+  }
   @media (max-width: 760px) {
     .hero { grid-template-columns: minmax(0, 1fr); }
     .spot { border-left: 0; border-top: var(--line); }
