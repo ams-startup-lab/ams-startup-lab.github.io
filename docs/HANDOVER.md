@@ -10,9 +10,12 @@ Everything needed to run this website is in this repository, except three accoun
 
 Keep at least two organization owners at all times.
 
+## The current routine
+Name "ASL website weekly update", in Yuval Engel's Claude account: https://claude.ai/code/routines/trig_013VAxYxX643WdbVAevE5cF3. Mondays 05:00 UTC, model Sonnet 5, no connectors attached. Its prompt tells it to read `ROUTINE_PROMPT.md` from `main`, so instructions change by commit, not in the routine.
+
 ## Recreate the routine
 1. claude.ai/code, Routines, New routine.
-2. Repository: this repository. Schedule: weekly.
+2. Connect GitHub to Claude first and install the Claude GitHub app on the `ams-startup-lab` organization. Repository: this repository. Schedule: weekly. Remove any connectors that get attached by default.
 3. Prompt: everything below the line in `ROUTINE_PROMPT.md`.
 4. Environment network access: custom allowlist with `api.openalex.org`, `api.crossref.org`, `pub.orcid.org`, `abs.uva.nl`, `www.uva.nl`, `registry.npmjs.org`, `pypi.org`, `files.pythonhosted.org`, and general web access for press search if the plan allows it.
 5. Run once by hand. Check that a `digest` issue appears.
