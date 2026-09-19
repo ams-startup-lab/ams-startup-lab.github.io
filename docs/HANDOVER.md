@@ -18,7 +18,8 @@ Name "ASL website weekly update", in Yuval Engel's Claude account: https://claud
 2. Connect GitHub to Claude first and install the Claude GitHub app on the `ams-startup-lab` organization. Repository: this repository. Schedule: weekly. Remove any connectors that get attached by default.
 3. Prompt: everything below the line in `ROUTINE_PROMPT.md`.
 4. Environment network access: custom allowlist with `api.openalex.org`, `api.crossref.org`, `pub.orcid.org`, `abs.uva.nl`, `www.uva.nl`, `registry.npmjs.org`, `pypi.org`, `files.pythonhosted.org`, and general web access for press search if the plan allows it.
-5. Run once by hand. Check that a `digest` issue appears.
+5. Environment variable: `OPENALEX_API_KEY` with a free key from https://openalex.org (account settings). Without it OpenAlex answers 429 and no papers are found. The key is the only secret in the system and it lives in the Claude environment, not in the repository.
+6. Run once by hand. Check that a `digest` issue appears.
 
 ## Without Claude routines
 The same prompt and scripts can run from a scheduled GitHub Actions workflow using `anthropics/claude-code-action` and an API key stored as a repository secret. Nothing else changes.

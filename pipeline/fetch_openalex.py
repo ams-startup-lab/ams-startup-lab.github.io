@@ -8,6 +8,7 @@ Output: pipeline/out/publication_candidates.json
 """
 import argparse
 import datetime as dt
+import os
 import sys
 import urllib.parse
 
@@ -20,6 +21,9 @@ FIELDS = ",".join([
     "authorships", "primary_location", "biblio", "topics",
     "abstract_inverted_index",
 ])
+# OpenAlex gives anonymous callers almost no daily budget. A free API key lifts that.
+# The key lives in the environment variable OPENALEX_API_KEY, never in this repository.
+API_KEY = os.environ.get("OPENALEX_API_KEY", "").strip()
 DEFAULT_LOOKBACK_DAYS = 400  # indexing lags publication; rejected and approved papers are filtered out
 
 
@@ -39,12 +43,15 @@ def works_for(member, since):
         filters.append("author.id:" + "|".join(member["openalex_ids"]))
     found, ok = {}, bool(filters)
     for author_filter in filters:
-        query = urllib.parse.urlencode({
+        params = {
             "filter": f"{author_filter},from_publication_date:{since}",
             "select": FIELDS,
             "per-page": 100,
             "sort": "publication_date:desc",
-        })
+        }
+        if API_KEY:
+            params["api_key"] = API_KEY
+        query = urllib.parse.urlencode(params)
         payload = fetch_json(f"{API}?{query}")
         if payload is None:
             ok = False
@@ -107,7 +114,8 @@ def main():
         since = max(since_arg, joined) if joined else since_arg
         works, ok = works_for(member, since.isoformat())
         if not ok:
-            problems.append(f"OpenAlex query failed for {slug}")
+            hint = "" if API_KEY else " (OPENALEX_API_KEY is not set; anonymous calls are rate limited)"
+            problems.append(f"OpenAlex query failed for {slug}{hint}")
         for work in works:
             cand = to_candidate(work)
             key = cand["doi"] or norm_title(cand["title"])
