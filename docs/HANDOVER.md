@@ -22,7 +22,7 @@ The same prompt and scripts can run from a scheduled GitHub Actions workflow usi
 
 ## Repository settings to check after any transfer
 - Settings, Pages: source "GitHub Actions", custom domain `www.ams-startup-lab.org`, HTTPS enforced.
-- Settings, Actions, General: workflow permissions "Read and write", and "Allow GitHub Actions to create and approve pull requests" on.
+- Settings, Actions, General: Actions enabled. The default workflow permission can stay read-only (a new organization locks it there). Each workflow declares the permissions it needs in its own file.
 - Labels exist: `auto`, `digest`, `suggestion`, `routine-alert`, `links`.
 - Branch protection on `main`, if used, must still let the `github-actions` bot push `data/rejected.yaml` and merge `auto` pull requests.
 
