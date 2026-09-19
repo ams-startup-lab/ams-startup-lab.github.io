@@ -1,0 +1,51 @@
+# Merge low-risk pull requests without review.
+# Conditions: same repository, branch claude/auto-*, label `auto`,
+# pipeline/check_auto_diff.py passes, and the site builds.
+# The gate script and the site code always come from main, never from the pull request.
+name: Auto-merge low-risk changes
+on:
+  pull_request_target:
+    types: [opened, synchronize, labeled]
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+jobs:
+  gate:
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      startsWith(github.event.pull_request.head.ref, 'claude/auto-') &&
+      contains(github.event.pull_request.labels.*.name, 'auto')
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      BASE_SHA: ${{ github.event.pull_request.base.sha }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      PR: ${{ github.event.pull_request.number }}
+    steps:
+      - uses: actions/checkout@v4 # main
+        with:
+          fetch-depth: 0
+      - run: git fetch origin "$HEAD_SHA"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q -r pipeline/requirements.txt
+      - name: Gate
+        id: gate
+        shell: bash # pipefail, so a blocked gate fails the step despite tee
+        run: python pipeline/check_auto_diff.py "$BASE_SHA" "$HEAD_SHA" | tee gate.txt
+      - name: Explain a blocked change
+        if: failure() && steps.gate.outcome == 'failure'
+        run: gh pr comment "$PR" --body "Not merged automatically. This change needs a person to review it.$(printf '\n\n```\n'; cat gate.txt; printf '```')"
+      - name: Take the data files from the pull request (code stays from main)
+        run: git checkout "$HEAD_SHA" -- data
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: gh pr merge "$PR" --squash --delete-branch
+      # A merge made by a workflow does not start the Deploy workflow, so start it here.
+      - run: gh workflow run deploy.yml --ref main

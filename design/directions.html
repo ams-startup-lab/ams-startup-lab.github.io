@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ASL design directions</title>
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: #e9e9ec; color: #111; }
+  .picker { position: sticky; top: 0; z-index: 9; display: flex; gap: 8px; align-items: center; padding: 10px 16px; background: #111; color: #fff; font-size: 14px; flex-wrap: wrap; }
+  .picker button { font: inherit; padding: 6px 14px; border-radius: 999px; border: 1px solid #555; background: transparent; color: #fff; cursor: pointer; }
+  .picker button[aria-pressed="true"] { background: #fff; color: #111; border-color: #fff; }
+  .picker span { opacity: .7; margin-left: auto; }
+  .frame { max-width: 1120px; margin: 24px auto; box-shadow: 0 8px 40px rgba(0,0,0,.15); display: none; }
+  .frame.on { display: block; }
+  a { color: inherit; }
+  ul { list-style: none; padding: 0; }
+  nav ul { display: flex; gap: 22px; flex-wrap: wrap; }
+  nav a { text-decoration: none; }
+  .wrap { padding: 0 40px; }
+  @media (max-width: 640px) { .wrap { padding: 0 16px; } .frame { margin: 0; } }
+
+  /* ---------- A. Editorial ---------- */
+  .A { background: #fbfaf7; color: #1a1a1a; font-family: Georgia, "Iowan Old Style", "Times New Roman", serif; }
+  .A header { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; padding: 28px 40px; border-bottom: 1px solid #1a1a1a; }
+  .A .logo { font-size: 22px; font-weight: 700; letter-spacing: -.01em; }
+  .A nav { font-family: system-ui, sans-serif; font-size: 13px; text-transform: uppercase; letter-spacing: .08em; }
+  .A .hero { padding: 72px 40px 56px; border-bottom: 1px solid #ddd; }
+  .A .hero h1 { font-size: clamp(34px, 5.2vw, 60px); line-height: 1.08; font-weight: 400; max-width: 17ch; letter-spacing: -.02em; }
+  .A .hero h1 em { color: #b3261e; font-style: italic; }
+  .A .hero p { margin-top: 24px; max-width: 58ch; font-size: 19px; line-height: 1.55; color: #444; }
+  .A .cols { display: grid; grid-template-columns: 2fr 1fr; gap: 56px; padding: 48px 40px 64px; }
+  .A h2 { font-family: system-ui, sans-serif; font-size: 12px; text-transform: uppercase; letter-spacing: .12em; color: #b3261e; margin-bottom: 20px; }
+  .A .pub { padding: 18px 0; border-top: 1px solid #ddd; }
+  .A .pub h3 { font-size: 21px; font-weight: 400; line-height: 1.3; }
+  .A .pub p, .A .news p { font-family: system-ui, sans-serif; font-size: 14px; color: #666; margin-top: 6px; }
+  .A .news li { padding: 14px 0; border-top: 1px solid #ddd; font-size: 17px; line-height: 1.35; }
+  @media (max-width: 760px) { .A .cols { grid-template-columns: 1fr; padding: 32px 16px; } .A header, .A .hero { padding-left: 16px; padding-right: 16px; } }
+
+  /* ---------- B. Modern lab ---------- */
+  .B { background: #fff; color: #000814; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .B header { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; padding: 20px 40px; background: #000814; color: #fff; }
+  .B .logo { font-weight: 700; font-size: 17px; letter-spacing: .02em; }
+  .B .logo i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #7c4dff; margin-right: 10px; }
+  .B nav { font-size: 14px; opacity: .85; }
+  .B .hero { background: #000814; color: #fff; padding: 72px 40px 88px; background-image: radial-gradient(circle at 85% 20%, rgba(124,77,255,.45), transparent 45%); }
+  .B .hero h1 { font-size: clamp(34px, 5.4vw, 62px); line-height: 1.04; letter-spacing: -.03em; max-width: 16ch; }
+  .B .hero p { margin-top: 22px; max-width: 54ch; font-size: 18px; line-height: 1.55; color: #c9cbd6; }
+  .B .hero .cta { display: inline-block; margin-top: 30px; padding: 12px 22px; background: #7c4dff; color: #fff; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; }
+  .B .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: -44px 40px 0; }
+  .B .stat { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 6px 24px rgba(0,8,20,.12); }
+  .B .stat b { display: block; font-size: 30px; letter-spacing: -.02em; }
+  .B .stat span { font-size: 13px; color: #5b6070; }
+  .B section { padding: 56px 40px; }
+  .B h2 { font-size: 26px; letter-spacing: -.02em; margin-bottom: 22px; }
+  .B .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .B .card { border: 1px solid #e4e5ec; border-radius: 12px; padding: 20px; }
+  .B .tag { display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #6200ea; background: #efe7ff; padding: 3px 8px; border-radius: 4px; margin-bottom: 12px; }
+  .B .card h3 { font-size: 16px; line-height: 1.35; }
+  .B .card p { font-size: 13px; color: #5b6070; margin-top: 8px; }
+  @media (max-width: 760px) { .B .grid, .B .stats { grid-template-columns: 1fr; } .B header, .B .hero, .B section { padding-left: 16px; padding-right: 16px; } .B .stats { margin: -44px 16px 0; } }
+
+  /* ---------- C. Index ---------- */
+  .C { background: #f4f4f1; color: #111; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .C .mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+  .C header { display: grid; grid-template-columns: 1fr auto; gap: 16px; padding: 18px 40px; border-bottom: 2px solid #111; align-items: center; }
+  .C .logo { font-weight: 800; font-size: 15px; text-transform: uppercase; letter-spacing: .04em; }
+  .C .hero { display: grid; grid-template-columns: 1.4fr 1fr; border-bottom: 2px solid #111; }
+  .C .hero > div { padding: 48px 40px; }
+  .C .hero > div + div { border-left: 2px solid #111; background: #ffe14d; }
+  .C .hero h1 { font-size: clamp(30px, 4.4vw, 50px); line-height: 1.05; letter-spacing: -.03em; font-weight: 800; }
+  .C .hero p { margin-top: 18px; font-size: 16px; line-height: 1.55; max-width: 50ch; }
+  .C .hero .next h3 { font-size: 22px; line-height: 1.2; margin: 10px 0; letter-spacing: -.01em; }
+  .C .bar { display: flex; justify-content: space-between; padding: 14px 40px; border-bottom: 2px solid #111; }
+  .C .filters span { display: inline-block; border: 1.5px solid #111; border-radius: 999px; padding: 3px 10px; margin-left: 6px; }
+  .C .filters span.on { background: #111; color: #f4f4f1; }
+  .C .row { display: grid; grid-template-columns: 70px 1fr 220px; gap: 20px; padding: 16px 40px; border-bottom: 1px solid #c9c9c2; align-items: baseline; }
+  .C .row h3 { font-size: 17px; font-weight: 600; line-height: 1.3; }
+  .C .row p { font-size: 13px; color: #555; margin-top: 4px; }
+  .C .row .j { text-align: right; color: #555; }
+  @media (max-width: 760px) { .C .hero { grid-template-columns: 1fr; } .C .hero > div + div { border-left: 0; border-top: 2px solid #111; } .C .row { grid-template-columns: 50px 1fr; padding: 14px 16px; } .C .row .j { display: none; } .C header, .C .bar, .C .hero > div { padding-left: 16px; padding-right: 16px; } .C header { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="picker">
+  <strong>ASL design directions</strong>
+  <button data-f="A" aria-pressed="true">A. Editorial</button>
+  <button data-f="B" aria-pressed="false">B. Modern lab</button>
+  <button data-f="C" aria-pressed="false">C. Index</button>
+  <span>Home page top only. Placeholder numbers.</span>
+</div>
+
+<!-- A -->
+<div class="frame A on" id="A">
+  <header>
+    <div class="logo">Amsterdam Startup Lab</div>
+    <nav><ul><li><a href="#">Team</a></li><li><a href="#">Publications</a></li><li><a href="#">Projects</a></li><li><a href="#">News</a></li><li><a href="#">Events</a></li><li><a href="#">Contact</a></li></ul></nav>
+  </header>
+  <div class="hero">
+    <h1>Rigorous research on the <em>future of startups</em>.</h1>
+    <p>The University of Amsterdam's entrepreneurship research community. We advance evidence-based discourse on the future of startups through rigorous, cutting-edge research.</p>
+  </div>
+  <div class="cols">
+    <div>
+      <h2>Latest publications</h2>
+      <div class="pub"><h3>The effects of stock options on employee mobility and entrepreneurship</h3><p>Chila &amp; Devarakonda · Journal of Business Venturing · 2024</p></div>
+      <div class="pub"><h3>Second publication title appears here in the same style</h3><p>Authors · Journal · Year</p></div>
+      <div class="pub"><h3>Third publication title appears here in the same style</h3><p>Authors · Journal · Year</p></div>
+    </div>
+    <div class="news">
+      <h2>News and media</h2>
+      <ul>
+        <li>Yuval Engel appointed Associate Editor at the Journal of Business Venturing Insights<p>2 March 2025</p></li>
+        <li>Doing good while making profits: how social ventures stay financially afloat<p>19 September 2024 · EI Exchange</p></li>
+        <li>'Benevolent sexism' in startups widens the gender gap<p>26 April 2024 · The Conversation</p></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- B -->
+<div class="frame B" id="B">
+  <header>
+    <div class="logo"><i></i>Amsterdam Startup Lab</div>
+    <nav><ul><li><a href="#">Team</a></li><li><a href="#">Publications</a></li><li><a href="#">Projects</a></li><li><a href="#">News</a></li><li><a href="#">Events</a></li><li><a href="#">Contact</a></li></ul></nav>
+  </header>
+  <div class="hero">
+    <h1>Evidence for the future of startups.</h1>
+    <p>The University of Amsterdam's entrepreneurship research community. Rigorous, cutting-edge research on how startups are founded, staffed, funded, and grown.</p>
+    <a class="cta" href="#">Work with us</a>
+  </div>
+  <div class="stats">
+    <div class="stat"><b>14</b><span>researchers</span></div>
+    <div class="stat"><b>16+</b><span>publications since 2023</span></div>
+    <div class="stat"><b>2</b><span>industry collaborations</span></div>
+  </div>
+  <section>
+    <h2>Latest from the lab</h2>
+    <div class="grid">
+      <div class="card"><span class="tag">Publication</span><h3>The effects of stock options on employee mobility and entrepreneurship</h3><p>Chila &amp; Devarakonda · Journal of Business Venturing · 2024</p></div>
+      <div class="card"><span class="tag">News</span><h3>Yuval Engel appointed Associate Editor at the Journal of Business Venturing Insights</h3><p>2 March 2025</p></div>
+      <div class="card"><span class="tag">Media</span><h3>'Benevolent sexism' in startups widens the gender gap</h3><p>The Conversation · 26 April 2024</p></div>
+    </div>
+  </section>
+</div>
+
+<!-- C -->
+<div class="frame C" id="C">
+  <header>
+    <div class="logo">Amsterdam Startup Lab</div>
+    <nav class="mono"><ul><li><a href="#">Team</a></li><li><a href="#">Publications</a></li><li><a href="#">Projects</a></li><li><a href="#">News</a></li><li><a href="#">Events</a></li><li><a href="#">Contact</a></li></ul></nav>
+  </header>
+  <div class="hero">
+    <div>
+      <div class="mono">University of Amsterdam · Amsterdam Business School</div>
+      <h1 style="margin-top:14px">Research on how startups really work.</h1>
+      <p>We advance evidence-based discourse on the future of startups through rigorous, cutting-edge research.</p>
+    </div>
+    <div class="next">
+      <div class="mono">Latest news · 2 Mar 2025</div>
+      <h3>Yuval Engel appointed Associate Editor at the Journal of Business Venturing Insights</h3>
+      <a class="mono" href="#">Read →</a>
+    </div>
+  </div>
+  <div class="bar mono"><span>Publications (16)</span><span class="filters"><span class="on">All</span><span>2025</span><span>2024</span><span>2023</span><span>By member</span></span></div>
+  <div class="row"><div class="mono">2024</div><div><h3>The effects of stock options on employee mobility and entrepreneurship</h3><p>Chila, V., &amp; Devarakonda, S.</p></div><div class="mono j">J. Business Venturing</div></div>
+  <div class="row"><div class="mono">2025</div><div><h3>Second publication title appears here in the same style</h3><p>Authors</p></div><div class="mono j">Journal</div></div>
+  <div class="row"><div class="mono">2025</div><div><h3>Third publication title appears here in the same style</h3><p>Authors</p></div><div class="mono j">Journal</div></div>
+  <div class="row"><div class="mono">2023</div><div><h3>Fourth publication title appears here in the same style</h3><p>Authors</p></div><div class="mono j">Journal</div></div>
+</div>
+
+<script>
+  document.querySelectorAll('.picker button').forEach(b => b.onclick = () => {
+    document.querySelectorAll('.picker button').forEach(x => x.setAttribute('aria-pressed', x === b));
+    document.querySelectorAll('.frame').forEach(f => f.classList.toggle('on', f.id === b.dataset.f));
+  });
+</script>
+</body>
+</html>

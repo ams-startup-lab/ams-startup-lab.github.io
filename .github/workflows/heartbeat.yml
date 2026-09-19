@@ -1,0 +1,25 @@
+# The weekly routine can stop silently (for example when its GitHub access lapses).
+# If no digest issue has appeared for 10 days, open an alert issue.
+name: Heartbeat
+on:
+  schedule:
+    - cron: "0 6 * * 3"
+  workflow_dispatch:
+permissions:
+  issues: write
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - run: |
+          since=$(date -u -d '10 days ago' +%Y-%m-%d)
+          recent=$(gh issue list --label digest --state all --search "created:>=$since" --json number --jq length)
+          open_alerts=$(gh issue list --label routine-alert --state open --json number --jq length)
+          if [ "$recent" -eq 0 ] && [ "$open_alerts" -eq 0 ]; then
+            gh issue create --label routine-alert \
+              --title "Weekly update routine has not run for 10 days" \
+              --body "No digest issue since $since. See docs/RUNBOOK.md, section 'The routine stopped'."
+          fi

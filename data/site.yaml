@@ -1,0 +1,37 @@
+name: Amsterdam Startup Lab
+hero:
+  heading: Welcome to the Amsterdam Startup Lab (ASL)
+  tagline: The University of Amsterdam Community Hub for Collaboration with Entrepreneurship Scholars
+about:
+  heading: About Us
+  text:
+  - ASL is a thriving community of entrepreneurship scholars based at the University of Amsterdam. Our work delves into the heart of startups—examining the people, processes, and environments that drive them to scale new heights or face challenging stagnation.
+  - 'Our mission is simple yet powerful: To advance evidence-based discourse on the future of startups through rigorous, cutting-edge research. By partnering practitioners, policymakers, and students, we identify critical research questions and provide insights into solutions that make a real impact.'
+  - Join us to explore what makes startups succeed, scale, or stumble. Whether you’re an academic, entrepreneur, investor, startup employee, policymaker, or just curious about the startup ecosystem, ASL is open for exciting collaborations.
+contact:
+  heading: Contact Us
+  text: Curious about working with us? Just get in touch!
+  email: secbs-abs@uva.nl
+  email_href: mailto:secbs-abs@uva.nl?subject=Amsterdam%20Startup%20Lab
+  address: Plantage Muidergracht 12, 1018TV, Amsterdam, The Netherlands
+footer: © 2024 - Amsterdam Startup Lab
+logo_url: https://static.wixstatic.com/media/b65966_aaa0415de5df4352ad7b420574811321~mv2.png
+hero_image_url: https://static.wixstatic.com/media/daa120_4bcbe761026649f4a2d6c6875f26af9e~mv2.jpg
+social_links: []
+page_intros:
+  team:
+    heading: Meet the Team
+    text: The people behind the Amsterdam Startup Lab
+  publications:
+    heading: Publications
+    text: Recent peer-reviewed work by ASL members
+  projects:
+    heading: Projects
+    text: What we are currently busy with
+  news:
+    heading: News & Media
+    text: 🤩 ASL work in the media 🤩
+  events:
+    heading: Our Upcoming Events
+    text: Join us next time!
+    empty: No events at the moment

@@ -1,0 +1,15 @@
+name: Suggest something for the website
+description: A new paper, press item, event, or a change to the team page.
+labels: [suggestion]
+body:
+  - type: input
+    id: link
+    attributes:
+      label: Link
+      description: DOI or URL, if there is one.
+  - type: textarea
+    id: note
+    attributes:
+      label: What should change?
+    validations:
+      required: true

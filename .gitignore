@@ -22,3 +22,8 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# pipeline output
+pipeline/out/
+__pycache__/
+.venv/

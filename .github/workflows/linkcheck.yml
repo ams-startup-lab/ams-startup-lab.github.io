@@ -1,0 +1,25 @@
+# Monthly check for dead links in the data files. Opens an issue with the report.
+name: Link check
+on:
+  schedule:
+    - cron: "0 5 1 * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+  issues: write
+jobs:
+  links:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - id: lychee
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: --no-progress --max-retries 2 --accept 200,403,429 "data/**/*.yaml" "data/**/*.md"
+          fail: false
+      - if: steps.lychee.outputs.exit_code != 0
+        uses: peter-evans/create-issue-from-file@v5
+        with:
+          title: Dead links found
+          content-filepath: ./lychee/out.md
+          labels: links

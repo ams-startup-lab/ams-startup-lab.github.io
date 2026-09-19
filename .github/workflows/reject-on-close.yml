@@ -1,0 +1,41 @@
+# Closing a candidate pull request without merging means "rejected".
+# Record its DOI or URL in data/rejected.yaml so it is never proposed again.
+name: Record rejected candidate
+on:
+  pull_request_target:
+    types: [closed]
+permissions:
+  contents: write
+jobs:
+  reject:
+    if: >-
+      github.event.pull_request.merged == false &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      startsWith(github.event.pull_request.head.ref, 'claude/cand-')
+    runs-on: ubuntu-latest
+    env:
+      BASE_SHA: ${{ github.event.pull_request.base.sha }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - uses: actions/checkout@v4 # main
+        with:
+          fetch-depth: 0
+      - run: git fetch origin "$HEAD_SHA"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q -r pipeline/requirements.txt
+      - name: Record the items this pull request would have added
+        run: |
+          mkdir -p /tmp/rejected
+          git diff --name-only --diff-filter=A "$BASE_SHA...$HEAD_SHA" -- data/publications data/news data/events | while read -r f; do
+            git show "$HEAD_SHA:$f" > "/tmp/rejected/$(basename "$f")"
+          done
+          python pipeline/reject.py /tmp/rejected/*.yaml
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/rejected.yaml
+          git diff --cached --quiet || git commit -m "Record rejected candidate from #${{ github.event.pull_request.number }}"
+          git push
