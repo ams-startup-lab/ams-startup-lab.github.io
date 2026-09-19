@@ -20,7 +20,7 @@ FIELDS = ",".join([
     "authorships", "primary_location", "biblio", "topics",
     "abstract_inverted_index",
 ])
-DEFAULT_LOOKBACK_DAYS = 120  # indexing lags publication, so look back generously
+DEFAULT_LOOKBACK_DAYS = 400  # indexing lags publication; rejected and approved papers are filtered out
 
 
 def abstract_text(inverted, limit=900):
@@ -84,7 +84,7 @@ def to_candidate(work):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--since", help="YYYY-MM-DD; default is 120 days ago")
+    parser.add_argument("--since", help="YYYY-MM-DD; default is 400 days ago")
     args = parser.parse_args()
     today = dt.date.today()
     default_since = today - dt.timedelta(days=DEFAULT_LOOKBACK_DAYS)

@@ -2,7 +2,8 @@
 
 A pull request labelled `auto` merges without review only if this passes.
 Rules: it may only modify (never add, delete, or rename) existing data files,
-and in each file only the fields listed below may differ.
+and in each file only the fields listed below may differ. It may also add
+(never remove) entries in data/rejected.yaml.
 Anything else must wait for a person.
 
 Usage: python pipeline/check_auto_diff.py BASE_SHA HEAD_SHA   (run inside the repo)
@@ -15,7 +16,9 @@ import yaml
 ALLOWED = {
     "data/publications/": {"status", "volume", "issue", "pages", "year"},
 }
-ALLOWED_WHOLE_FILES = set()  # no whole-file exceptions at present
+# The routine may add entries to the rejected list (papers it judged irrelevant),
+# so they are reported once and not every week. It may never remove entries.
+APPEND_ONLY = "data/rejected.yaml"
 
 
 def git(*args):
@@ -33,7 +36,13 @@ def main():
         failures.append("empty diff")
     for line in lines:
         status, path = line.split("\t", 1)
-        if path in ALLOWED_WHOLE_FILES and status == "M":
+        if path == APPEND_ONLY and status == "M":
+            old = yaml.safe_load(git("show", f"{base}:{path}")) or {}
+            new = yaml.safe_load(git("show", f"{head}:{path}")) or {}
+            grew = set(new) == {"dois", "urls"} and all(
+                set(old.get(k) or []) <= set(new.get(k) or []) for k in ("dois", "urls"))
+            if not grew:
+                failures.append(f"{path}: entries may only be added, never removed")
             continue
         fields = next((f for prefix, f in ALLOWED.items() if path.startswith(prefix) and path.endswith(".yaml")), None)
         if fields is None:

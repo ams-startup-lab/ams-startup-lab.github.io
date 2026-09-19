@@ -25,7 +25,7 @@ GitHub issues (suggestions)                                                     
 
 1. The routine never pushes to `main` and never merges. Only workflows and people merge.
 2. New publications, news, events, and member changes always need a person. Not every member paper belongs to the lab.
-3. Only metadata completion on already approved publications merges without review. `pipeline/check_auto_diff.py` enforces this field by field.
+3. Only two things merge without review: metadata completion on already approved publications, and additions to `data/rejected.yaml` (papers the routine set aside as irrelevant, reported once in the digest). `pipeline/check_auto_diff.py` enforces this field by field.
 4. News items must pass `pipeline/verify_url.py`: the page exists and names the lab or a member. Titles and dates come from the page.
 5. A failed fetch never changes data.
 6. A closed candidate is recorded in `data/rejected.yaml` and is not proposed again.
