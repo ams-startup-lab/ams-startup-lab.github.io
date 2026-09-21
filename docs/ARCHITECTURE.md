@@ -29,7 +29,8 @@ GitHub issues (suggestions)                                                     
 4. News items must pass `pipeline/verify_url.py`: the page exists and names the lab or a member. Titles and dates come from the page.
 5. A failed fetch never changes data.
 6. A closed candidate is recorded in `data/rejected.yaml` and is not proposed again.
-7. The repository is public and holds only public information. No email addresses, no secrets.
+7. The repository is public and holds only public information: names, titles, publications, links, and photos that were already on the website. The one secret, the OpenAlex API key, lives in the cloud environment and never in the repository.
+8. Anyone may open a suggestion issue. The routine acts only on issues from organization members and lists the rest in the digest.
 
 ## State
 
