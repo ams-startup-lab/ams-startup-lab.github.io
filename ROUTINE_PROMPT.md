@@ -19,12 +19,12 @@ You maintain the website of the Amsterdam Startup Lab (ASL), the entrepreneurshi
 
 ## Steps
 
-1. Setup: `pip install -q -r pipeline/requirements.txt`. List open pull requests whose branch starts with `claude/cand-` and note their DOIs and URLs. Do not propose those again.
+1. Setup: run `python3 -c "import yaml"`. Only if that fails, run `pip install -q -r pipeline/requirements.txt`. The scripts need PyYAML and nothing else. List open pull requests whose branch starts with `claude/cand-` and note their DOIs and URLs. Do not propose those again.
 2. Delete `pipeline/out/` if it exists, so no stale results are read. Then run the fetchers. If a script exits with an error or its output file is missing, skip that source and report it in the digest:
    - `python pipeline/fetch_openalex.py`
    - `python pipeline/refresh_metadata.py`
    - `python pipeline/fetch_uva.py`
-   Read the JSON files in `pipeline/out/`.
+   Read the JSON files in `pipeline/out/`. If `fetch_openalex.py` reports problems, run `python pipeline/openalex_status.py` and quote its output in the digest. Do not retry OpenAlex more than once.
 3. Publications. For each candidate in `publication_candidates.json`:
    - Drop it if it is not a journal article, book chapter, or book (for example a dataset, erratum, or peer review). Drop preprints and conference abstracts (for example Academy of Management Proceedings).
    - Check it is really the member's paper: co-authors, topic, and affiliation should fit the member. If in doubt, mark it "low confidence" in the pull request.
