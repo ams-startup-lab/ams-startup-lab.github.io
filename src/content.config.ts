@@ -20,6 +20,9 @@ const members = defineCollection({
     orcid: z.string().regex(/^\d{4}-\d{4}-\d{4}-\d{3}[\dX]$/).optional(),
     openalex_ids: z.array(z.string().regex(/^A\d+$/)).default([]),
     uva_url: z.string().url().optional(),
+    // For members based elsewhere who stay part of the lab.
+    affiliation: z.string().optional(),
+    affiliation_url: z.string().url().optional(),
     scholar_url: z.string().url().optional(),
     linkedin_url: z.string().url().optional(),
     photo: z.string().optional(), // path under public/

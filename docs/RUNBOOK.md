@@ -14,7 +14,10 @@ Copy an existing file in the matching `data/` folder, rename it, edit the values
 ## Add a member
 Create `data/members/<first-last>.yaml` from an existing file. Add `orcid` and `openalex_ids` so their papers are found. Set `joined` so older papers are not proposed.
 
-## A member leaves
+## A member moves to another institution but stays with the lab
+Set `group: affiliate` in their file, add `affiliation` (the institution) and `affiliation_url` (their profile there), and remove `uva_url`. They appear under "Affiliated researchers" and their papers are still proposed. Example: `data/members/lien-de-cuyper.yaml`.
+
+## A member leaves the lab
 Set `left: YYYY-MM-DD` in their file. They move to alumni and their new papers are no longer proposed.
 
 ## Undo a change

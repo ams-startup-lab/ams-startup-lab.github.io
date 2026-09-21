@@ -6,7 +6,7 @@ const { current, alumni } = await members();
 const groups = [
   ['Faculty', current.filter((m) => m.data.group === 'faculty')],
   ['PhD candidates', current.filter((m) => m.data.group === 'phd')],
-  ['Affiliates', current.filter((m) => m.data.group === 'affiliate')],
+  ['Affiliated researchers', current.filter((m) => m.data.group === 'affiliate')],
   ['Alumni', alumni],
 ] as const;
 const initials = (name: string) => name.split(' ').filter((w) => /^[A-Z]/.test(w)).map((w) => w[0]).slice(0, 2).join('');
@@ -24,9 +24,10 @@ const initials = (name: string) => name.split(' ').filter((w) => /^[A-Z]/.test(w
               : <span class="avatar" aria-hidden="true">{initials(m.data.name)}</span>}
             <div>
               <h3>{m.data.name}</h3>
-              <p class="meta">{m.data.title}{m.data.lab_role && ` · ${m.data.lab_role}`}</p>
+              <p class="meta">{m.data.title}{m.data.lab_role && ` · ${m.data.lab_role}`}{m.data.affiliation && ` · ${m.data.affiliation}`}</p>
               <p class="links mono">
                 {m.data.uva_url && <a href={m.data.uva_url}>UvA profile</a>}
+                {m.data.affiliation_url && <a href={m.data.affiliation_url}>Profile</a>}
                 {m.data.scholar_url && <a href={m.data.scholar_url}>Google Scholar</a>}
                 {m.data.orcid && <a href={`https://orcid.org/${m.data.orcid}`}>ORCID</a>}
                 {m.data.linkedin_url && <a href={m.data.linkedin_url}>LinkedIn</a>}

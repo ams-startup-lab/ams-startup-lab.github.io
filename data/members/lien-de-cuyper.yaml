@@ -1,8 +1,9 @@
 name: Lien De Cuyper
 title: Assistant Professor
-group: faculty
-order: 40
-uva_url: https://abs.uva.nl/profile/d/e/l.m.c.decuyper/l.m.c.de-cuyper.html
+group: affiliate
+order: 10
+affiliation: Antwerp Management School
+affiliation_url: https://www.antwerpmanagementschool.be/nl/faculty/lien-de-cuyper
 linkedin_url: https://www.linkedin.com/in/lien-de-cuyper-92427414b/
 orcid: 0000-0002-5743-8105
 openalex_ids:
