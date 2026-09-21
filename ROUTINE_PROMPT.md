@@ -19,7 +19,7 @@ You maintain the website of the Amsterdam Startup Lab (ASL), the entrepreneurshi
 
 ## Steps
 
-1. Setup: `pip install -q -r pipeline/requirements.txt`. List open pull requests whose branch starts with `claude/cand-` and note their DOIs and URLs. Do not propose those again.
+1. Setup: run `python3 -c "import yaml"`. Only if that fails, run `pip install -q -r pipeline/requirements.txt`. The scripts need PyYAML and nothing else. List open pull requests whose branch starts with `claude/cand-` and note their DOIs and URLs. Do not propose those again.
 2. Delete `pipeline/out/` if it exists, so no stale results are read. Then run the fetchers. If a script exits with an error or its output file is missing, skip that source and report it in the digest:
    - `python pipeline/fetch_openalex.py`
    - `python pipeline/refresh_metadata.py`
