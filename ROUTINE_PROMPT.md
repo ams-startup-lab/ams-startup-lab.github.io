@@ -24,7 +24,7 @@ You maintain the website of the Amsterdam Startup Lab (ASL), the entrepreneurshi
    - `python pipeline/fetch_openalex.py`
    - `python pipeline/refresh_metadata.py`
    - `python pipeline/fetch_uva.py`
-   Read the JSON files in `pipeline/out/`.
+   Read the JSON files in `pipeline/out/`. If `fetch_openalex.py` reports problems, run `python pipeline/openalex_status.py` and quote its output in the digest. Do not retry OpenAlex more than once.
 3. Publications. For each candidate in `publication_candidates.json`:
    - Drop it if it is not a journal article, book chapter, or book (for example a dataset, erratum, or peer review). Drop preprints and conference abstracts (for example Academy of Management Proceedings).
    - Check it is really the member's paper: co-authors, topic, and affiliation should fit the member. If in doubt, mark it "low confidence" in the pull request.

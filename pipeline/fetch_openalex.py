@@ -12,8 +12,8 @@ import os
 import sys
 import urllib.parse
 
-from common import (fetch_json, load_rejected, load_yaml_dir, norm_doi,
-                    norm_title, norm_url, write_out)
+from common import (API_KEY_ENV_NAME, fetch_json, load_rejected, load_yaml_dir,
+                    norm_doi, norm_title, norm_url, write_out)
 
 API = "https://api.openalex.org/works"
 FIELDS = ",".join([
@@ -23,7 +23,7 @@ FIELDS = ",".join([
 ])
 # OpenAlex gives anonymous callers almost no daily budget. A free API key lifts that.
 # The key lives in the environment variable OPENALEX_API_KEY, never in this repository.
-API_KEY = os.environ.get("OPENALEX_API_KEY", "").strip()
+API_KEY = os.environ.get(API_KEY_ENV_NAME, "").strip()
 DEFAULT_LOOKBACK_DAYS = 400  # indexing lags publication; rejected and approved papers are filtered out
 
 
@@ -114,8 +114,7 @@ def main():
         since = max(since_arg, joined) if joined else since_arg
         works, ok = works_for(member, since.isoformat())
         if not ok:
-            hint = "" if API_KEY else " (OPENALEX_API_KEY is not set; anonymous calls are rate limited)"
-            problems.append(f"OpenAlex query failed for {slug}{hint}")
+            problems.append(f"OpenAlex query failed for {slug}; run pipeline/openalex_status.py to see why")
         for work in works:
             cand = to_candidate(work)
             key = cand["doi"] or norm_title(cand["title"])

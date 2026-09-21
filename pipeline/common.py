@@ -14,6 +14,8 @@ DATA = ROOT / "data"
 OUT = ROOT / "pipeline" / "out"
 # OpenAlex and Crossref ask for a contact address in the User-Agent ("polite pool").
 USER_AGENT = "ams-startup-lab-site/1.0 (+https://www.ams-startup-lab.org)"
+# Fallback when no API credential is configured on the environment.
+API_KEY_ENV_NAME = "OPENALEX_API_KEY"
 
 
 def load_yaml_dir(name):
