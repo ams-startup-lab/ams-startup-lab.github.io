@@ -34,3 +34,9 @@ An issue "Weekly update routine has not run for 10 days" appears. Open claude.ai
 
 ## Member photos
 Photos live in `public/team/<slug>.jpg` (320 by 320 pixels) and are linked with `photo: /team/<slug>.jpg` in the member file. Members supplied their own photos for the website. For a new member, ask them for a photo. A member without a photo gets an initials tile. The routine never adds photos.
+
+## The site is down
+1. Check https://github.com/ams-startup-lab/ams-startup-lab.github.io/actions — a red Deploy run means a bad commit. Revert it.
+2. Check the domain has not expired at Wix (Settings, Premium Subscriptions, the Domain line).
+3. Check DNS still points to GitHub: the apex has the four `185.199.*.153` A records, and `www` is a CNAME to `ams-startup-lab.github.io`.
+4. Check Settings, Pages in the repository still shows the custom domain `www.ams-startup-lab.org` with HTTPS enforced.
