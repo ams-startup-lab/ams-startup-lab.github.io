@@ -27,6 +27,10 @@ jobs:
         with:
           fetch-depth: 0
       - run: git fetch origin "$HEAD_SHA"
+      # Compare against the merge base, not the tip of main: the branch may have
+      # been cut earlier, and commits made on main since then are not its changes.
+      - name: Find the merge base
+        run: echo "BASE_SHA=$(git merge-base "$BASE_SHA" "$HEAD_SHA")" >> "$GITHUB_ENV"
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
