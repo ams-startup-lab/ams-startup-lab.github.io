@@ -92,10 +92,9 @@ const partners = defineCollection({
     name: z.string(),
     url: z.string().url(),
     type: z.enum(['research', 'ecosystem', 'teaching']),
-    description: z.string(), // what the lab does with this partner, one sentence
+    description: z.string(), // one sentence: what the lab does with the partner, or what the partner is
+    status: z.enum(['current', 'past']).default('current'),
     members: z.array(slug).min(1),
-    since: z.number().int().optional(),
-    until: z.number().int().optional(), // set when the collaboration has ended
     confirmed: isoDate, // date the member confirmed the partner may be named
     logo: z.string().regex(/^\/partners\/[a-z0-9-]+\.(svg|png|webp|jpg)$/).optional(),
     logo_permission: isoDate.optional(), // date the partner allowed use of its logo
