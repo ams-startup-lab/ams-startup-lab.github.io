@@ -3,14 +3,20 @@ import Base from '../layouts/Base.astro';
 import { getCollection } from 'astro:content';
 import { siteTexts } from '../lib';
 const intro = (await siteTexts()).page_intros.partners;
-const partners = (await getCollection('partners')).sort((a, b) => a.data.order - b.data.order || a.data.name.localeCompare(b.data.name));
+const all = (await getCollection('partners')).sort((a, b) => a.data.order - b.data.order || a.data.name.localeCompare(b.data.name));
+const walls = [
+  { heading: '', items: all.filter((p) => p.data.group === 'external') },
+  { heading: 'Our friends at the UvA', items: all.filter((p) => p.data.group === 'uva') },
+].filter((w) => w.items.length);
 ---
 <Base title="Partners" description={intro.text}>
   <section class="page-head"><h1>{intro.heading}</h1><p>{intro.text}</p></section>
+  {all.length === 0 && <section class="block"><p>Our partner list is being prepared.</p></section>}
+  {walls.map((w) => (
   <section class="flush">
-    {partners.length === 0 && <p class="block">Our partner list is being prepared.</p>}
+    {w.heading && <h2 class="bar mono">{w.heading}</h2>}
     <ul class="wall">
-      {partners.map(({ data: d }) => (
+      {w.items.map(({ data: d }) => (
         <li>
           <a href={d.url} title={d.name}>
             {d.logo ? <img src={d.logo} alt={d.name} loading="lazy" /> : <span>{d.name}</span>}
@@ -19,9 +25,11 @@ const partners = (await getCollection('partners')).sort((a, b) => a.data.order -
       ))}
     </ul>
   </section>
+  ))}
 </Base>
 
 <style>
+  section.flush + section.flush { border-top: var(--line); }
   .wall { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
   @media (max-width: 520px) { .wall { grid-template-columns: 1fr 1fr; } .wall a { padding: 16px; } .wall span { font-size: 16px; } }
   .wall li { border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
@@ -29,5 +37,5 @@ const partners = (await getCollection('partners')).sort((a, b) => a.data.order -
   .wall img { max-width: 100%; max-height: 64px; object-fit: contain; filter: grayscale(1); opacity: 0.85; transition: filter 0.2s, opacity 0.2s; }
   .wall a:hover img, .wall a:focus-visible img { filter: none; opacity: 1; }
   .wall span { font-weight: 800; font-size: 20px; letter-spacing: -0.02em; line-height: 1.15; }
-  @media (prefers-color-scheme: dark) { .wall img { filter: grayscale(1) invert(1); } .wall a:hover img { filter: none; } .wall a:hover { background: #fff; } }
+  @media (prefers-color-scheme: dark) { .wall img { filter: grayscale(1) invert(1); } .wall a:hover img { filter: none; } .wall a:has(img):hover { background: #fff; } }
 </style>
