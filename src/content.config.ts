@@ -84,18 +84,15 @@ const projects = defineCollection({
   }).strict(),
 });
 
-// Organisations the lab works with. A partner is listed only after the member
-// who works with it confirmed it may be named; a logo needs separate permission.
+// Organisations the lab has worked with, shown as a logo wall. A partner is listed
+// only after the member confirmed it may be named; a logo needs separate permission.
 const partners = defineCollection({
   loader: glob({ pattern: '*.yaml', base: './data/partners' }),
   schema: z.object({
     name: z.string(),
     url: z.string().url(),
-    type: z.enum(['research', 'ecosystem', 'teaching']),
-    description: z.string(), // what the lab does with this partner, one sentence
-    members: z.array(slug).min(1),
-    since: z.number().int().optional(),
-    until: z.number().int().optional(), // set when the collaboration has ended
+    group: z.enum(['external', 'uva']).default('external'), // 'uva': shown under "Our friends at the UvA"
+    members: z.array(slug).min(1), // who works or worked with the partner
     confirmed: isoDate, // date the member confirmed the partner may be named
     logo: z.string().regex(/^\/partners\/[a-z0-9-]+\.(svg|png|webp|jpg)$/).optional(),
     logo_permission: isoDate.optional(), // date the partner allowed use of its logo
