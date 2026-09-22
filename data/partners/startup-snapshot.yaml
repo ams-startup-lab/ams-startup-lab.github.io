@@ -1,9 +1,5 @@
 name: StartupSnapshot
 url: https://www.startupsnapshot.com/
-type: research
-status: current
-description: Platform that collects and shares data from a community of founders and
-  investors.
 members:
 - yuval-engel
 confirmed: 2026-09-22

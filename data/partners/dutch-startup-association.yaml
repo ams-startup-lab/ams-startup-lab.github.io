@@ -1,9 +1,5 @@
 name: Dutch Startup Association
 url: https://www.dutchstartupassociation.nl/
-type: ecosystem
-status: past
-description: Independent association that represents startups and scaleups in the
-  Netherlands.
 members:
 - yuval-engel
 confirmed: 2026-09-22

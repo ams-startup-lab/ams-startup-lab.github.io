@@ -3,49 +3,31 @@ import Base from '../layouts/Base.astro';
 import { getCollection } from 'astro:content';
 import { siteTexts } from '../lib';
 const intro = (await siteTexts()).page_intros.partners;
-const people = Object.fromEntries((await getCollection('members')).map((m) => [m.id, m.data.name]));
-const all = (await getCollection('partners')).sort((a, b) => a.data.order - b.data.order || a.data.name.localeCompare(b.data.name));
-const current = all.filter((p) => p.data.status === 'current');
-const past = all.filter((p) => p.data.status === 'past');
-const labels: Record<string, string> = {
-  research: 'Research and data',
-  ecosystem: 'Startup ecosystem and industry',
-  teaching: 'Teaching',
-};
-const groups = Object.entries(labels)
-  .map(([type, label]) => ({ label, items: current.filter((p) => p.data.type === type) }))
-  .concat([{ label: 'Past partners', items: past }])
-  .filter((g) => g.items.length);
+const partners = (await getCollection('partners')).sort((a, b) => a.data.order - b.data.order || a.data.name.localeCompare(b.data.name));
 ---
 <Base title="Partners" description={intro.text}>
   <section class="page-head"><h1>{intro.heading}</h1><p>{intro.text}</p></section>
-  {groups.map((g) => (
-    <section class="flush">
-      <h2 class="bar mono">{g.label}</h2>
-      <ul class="grid">
-        {g.items.map(({ data: d }) => (
-          <li>
-            {d.logo && <a class="mark" href={d.url} aria-hidden="true" tabindex="-1"><img src={d.logo} alt="" loading="lazy" /></a>}
-            <h3><a href={d.url}>{d.name}</a></h3>
-            <p>{d.description}</p>
-            <p class="mono meta">{d.members.map((id) => people[id] ?? id).join(', ')}</p>
-          </li>
-        ))}
-      </ul>
-    </section>
-  ))}
-  {all.length === 0 && <section class="block"><p>Our partner list is being prepared.</p></section>}
+  <section class="flush">
+    {partners.length === 0 && <p class="block">Our partner list is being prepared.</p>}
+    <ul class="wall">
+      {partners.map(({ data: d }) => (
+        <li>
+          <a href={d.url} title={d.name}>
+            {d.logo ? <img src={d.logo} alt={d.name} loading="lazy" /> : <span>{d.name}</span>}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
 </Base>
 
 <style>
-  section.flush { border-bottom: var(--line); }
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
-  .grid li { padding: 24px var(--gutter) 28px; border-bottom: 1px solid var(--rule); border-right: 1px solid var(--rule); display: flex; flex-direction: column; gap: 8px; }
-  .mark { display: flex; align-items: center; height: 72px; padding: 12px 16px; background: #fff; color: #111; border: 1px solid var(--rule); text-decoration: none; margin-bottom: 8px; }
-  .mark img { max-height: 44px; max-width: 180px; object-fit: contain; }
-  .grid h3 { font-size: 21px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.2; }
-  .grid h3 a { text-decoration: none; }
-  .grid h3 a:hover { text-decoration: underline; }
-  .grid p { font-size: 15px; color: var(--muted); }
-  .grid .meta { margin-top: auto; padding-top: 6px; }
+  .wall { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+  @media (max-width: 520px) { .wall { grid-template-columns: 1fr 1fr; } .wall a { padding: 16px; } .wall span { font-size: 16px; } }
+  .wall li { border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+  .wall a { display: flex; align-items: center; justify-content: center; aspect-ratio: 3 / 2; padding: 24px; text-decoration: none; text-align: center; }
+  .wall img { max-width: 100%; max-height: 64px; object-fit: contain; filter: grayscale(1); opacity: 0.85; transition: filter 0.2s, opacity 0.2s; }
+  .wall a:hover img, .wall a:focus-visible img { filter: none; opacity: 1; }
+  .wall span { font-weight: 800; font-size: 20px; letter-spacing: -0.02em; line-height: 1.15; }
+  @media (prefers-color-scheme: dark) { .wall img { filter: grayscale(1) invert(1); } .wall a:hover img { filter: none; } .wall a:hover { background: #fff; } }
 </style>
