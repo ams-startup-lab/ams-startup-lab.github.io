@@ -32,6 +32,9 @@ page_intros:
   projects:
     heading: Projects
     text: What we are currently busy with
+  partners:
+    heading: Partners
+    text: Organisations we work with in research, the startup ecosystem, and teaching
   news:
     heading: News & Media
     text: 🤩 ASL work in the media 🤩

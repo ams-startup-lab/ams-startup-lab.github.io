@@ -20,6 +20,17 @@ Set `group: affiliate` in their file, add `affiliation` (the institution) and `a
 ## A member leaves the lab
 Set `left: YYYY-MM-DD` in their file. They move to alumni and their new papers are no longer proposed.
 
+## Add a partner
+
+Partners are never added by the routine. A member tells the director, who adds the partner by hand or opens a suggestion issue.
+
+1. Ask the member to confirm with the partner that the lab may name it on the website. For a logo, ask separately.
+2. Add `data/partners/<slug>.yaml` with `name`, `url`, `type` (`research`, `ecosystem`, or `teaching`), a one-sentence `description` of what the lab does with the partner, `members` (member slugs), optionally `since`, and `confirmed` (the date of the member's confirmation).
+3. For a logo, put the file in `public/partners/` and add `logo: /partners/<file>` and `logo_permission: <date>`. The build fails if a logo has no permission date.
+4. When a collaboration ends, add `until: <year>`. The partner moves to "Past partners".
+
+The Partners menu item appears once the first partner exists.
+
 ## Undo a change
 Open the merged pull request and press **Revert**, then merge the revert.
 

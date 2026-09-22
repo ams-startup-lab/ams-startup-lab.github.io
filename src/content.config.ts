@@ -84,10 +84,32 @@ const projects = defineCollection({
   }).strict(),
 });
 
+// Organisations the lab works with. A partner is listed only after the member
+// who works with it confirmed it may be named; a logo needs separate permission.
+const partners = defineCollection({
+  loader: glob({ pattern: '*.yaml', base: './data/partners' }),
+  schema: z.object({
+    name: z.string(),
+    url: z.string().url(),
+    type: z.enum(['research', 'ecosystem', 'teaching']),
+    description: z.string(), // what the lab does with this partner, one sentence
+    members: z.array(slug).min(1),
+    since: z.number().int().optional(),
+    until: z.number().int().optional(), // set when the collaboration has ended
+    confirmed: isoDate, // date the member confirmed the partner may be named
+    logo: z.string().regex(/^\/partners\/[a-z0-9-]+\.(svg|png|webp|jpg)$/).optional(),
+    logo_permission: isoDate.optional(), // date the partner allowed use of its logo
+    order: z.number().int().default(100),
+  }).strict().refine((p) => !p.logo || p.logo_permission, {
+    message: 'a logo needs logo_permission: the date the partner allowed its use',
+    path: ['logo_permission'],
+  }),
+});
+
 // Site-wide texts (hero, about, contact). Free-form on purpose.
 const site = defineCollection({
   loader: glob({ pattern: 'site.yaml', base: './data' }),
   schema: z.object({ name: z.string() }).passthrough(),
 });
 
-export const collections = { site, members, publications, news, events, projects };
+export const collections = { site, members, publications, news, events, projects, partners };
