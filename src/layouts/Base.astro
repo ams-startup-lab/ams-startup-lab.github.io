@@ -21,6 +21,16 @@ const here = Astro.url.pathname.replace(/\/$/, '') || '/';
     <meta property="og:description" content={description} />
     <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- Visitor statistics: https://ams-startup-lab.goatcounter.com (no cookies). Localhost is not counted. -->
+    <script is:inline data-goatcounter="https://ams-startup-lab.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+    <script is:inline>
+      // Count clicks on links to other sites (papers, press) as events, to show which content people open.
+      document.addEventListener('click', (e) => {
+        const a = e.target.closest && e.target.closest('a[href^="http"]');
+        if (!a || a.host === location.host || !window.goatcounter || !window.goatcounter.count) return;
+        window.goatcounter.count({ path: a.href.replace(/^https?:\/\//, ''), title: a.textContent.trim().slice(0, 120), event: true });
+      });
+    </script>
   </head>
   <body>
     <a class="skip" href="#main">Skip to content</a>
@@ -39,6 +49,7 @@ const here = Astro.url.pathname.replace(/\/$/, '') || '/';
     <footer class="site">
       <p class="mono">© {new Date().getFullYear()} {site.name} · University of Amsterdam · Amsterdam Business School</p>
       <p>{site.contact.address}</p>
+      <p>We count visits with <a href="https://www.goatcounter.com">GoatCounter</a>. It uses no cookies and collects no personal information.</p>
     </footer>
     </div>
   </body>
