@@ -94,7 +94,7 @@ const partners = defineCollection({
     group: z.enum(['external', 'uva']).default('external'), // 'uva': shown under "Our friends at the UvA"
     members: z.array(slug).min(1), // who works or worked with the partner
     confirmed: isoDate, // date the member confirmed the partner may be named
-    logo: z.string().regex(/^\/partners\/[a-z0-9-]+\.(svg|png|webp|jpg)$/).optional(),
+    logo: z.string().regex(/^\/partners\/[a-z0-9-]+\.png$/).optional(), // PNG with transparent background
     logo_permission: isoDate.optional(), // date the partner allowed use of its logo
     order: z.number().int().default(100),
   }).strict().refine((p) => !p.logo || p.logo_permission, {

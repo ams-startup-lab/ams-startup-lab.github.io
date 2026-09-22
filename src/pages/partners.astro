@@ -2,6 +2,15 @@
 import Base from '../layouts/Base.astro';
 import { getCollection } from 'astro:content';
 import { siteTexts } from '../lib';
+import { readFileSync } from 'node:fs';
+
+// Give every logo a similar visual weight: wide wordmarks get shorter, square marks taller.
+// Height (px) is chosen so each logo covers about the same area. Reads the PNG header for its size.
+const logoHeight = (logo: string) => {
+  const png = readFileSync(`public${logo}`);
+  const ratio = png.readUInt32BE(16) / png.readUInt32BE(20);
+  return Math.round(Math.min(64, Math.sqrt(6000 / ratio)));
+};
 const intro = (await siteTexts()).page_intros.partners;
 const all = (await getCollection('partners')).sort((a, b) => a.data.order - b.data.order || a.data.name.localeCompare(b.data.name));
 const walls = [
@@ -19,7 +28,7 @@ const walls = [
       {w.items.map(({ data: d }) => (
         <li>
           <a href={d.url} title={d.name}>
-            {d.logo ? <img src={d.logo} alt={d.name} loading="lazy" /> : <span>{d.name}</span>}
+            {d.logo ? <img src={d.logo} alt={d.name} loading="lazy" style={`--h: ${logoHeight(d.logo)}px`} /> : <span>{d.name}</span>}
           </a>
         </li>
       ))}
@@ -31,11 +40,12 @@ const walls = [
 <style>
   section.flush + section.flush { border-top: var(--line); }
   .wall { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
-  @media (max-width: 520px) { .wall { grid-template-columns: 1fr 1fr; } .wall a { padding: 16px; } .wall span { font-size: 16px; } }
   .wall li { border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
-  .wall a { display: flex; align-items: center; justify-content: center; aspect-ratio: 3 / 2; padding: 24px; text-decoration: none; text-align: center; }
-  .wall img { max-width: 100%; max-height: 64px; object-fit: contain; filter: grayscale(1); opacity: 0.85; transition: filter 0.2s, opacity 0.2s; }
-  .wall a:hover img, .wall a:focus-visible img { filter: none; opacity: 1; }
-  .wall span { font-weight: 800; font-size: 20px; letter-spacing: -0.02em; line-height: 1.15; }
-  @media (prefers-color-scheme: dark) { .wall img { filter: grayscale(1) invert(1); } .wall a:hover img { filter: none; } .wall a:has(img):hover { background: #fff; } }
+  .wall a { display: flex; align-items: center; justify-content: center; aspect-ratio: 3 / 2; padding: 20px; text-decoration: none; text-align: center; }
+  /* Logos show in one colour: black on light, white on dark, black on the yellow hover. */
+  .wall img { height: var(--h); width: auto; max-width: 100%; object-fit: contain; filter: brightness(0); opacity: 0.85; }
+  .wall span { font-weight: 700; font-size: 17px; letter-spacing: -0.02em; line-height: 1.15; }
+  @media (max-width: 520px) { .wall { grid-template-columns: 1fr 1fr; } .wall a { padding: 14px; } .wall span { font-size: 16px; } .wall img { height: calc(var(--h) * 0.75); } }
+  @media (prefers-color-scheme: dark) { .wall img { filter: brightness(0) invert(1); } }
+  .wall a:hover img, .wall a:focus-visible img { filter: brightness(0); opacity: 1; }
 </style>

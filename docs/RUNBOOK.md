@@ -26,7 +26,7 @@ The Partners page is a logo wall of organisations the lab has worked with, past 
 
 1. Ask the member to confirm with the partner that the lab may name it on the website. For a logo, ask separately.
 2. Add `data/partners/<slug>.yaml` with `name`, `url`, `members` (member slugs), `group: uva` for UvA centres and labs (shown under "Our friends at the UvA"), and `confirmed` (the date of the member's confirmation).
-3. For a logo, put the file in `public/partners/` and add `logo: /partners/<file>` and `logo_permission: <date>`. The build fails if a logo has no permission date.
+3. For a logo, put a PNG with a transparent background in `public/partners/` and add `logo: /partners/<file>` and `logo_permission: <date>`. The build fails if a logo has no permission date.
 
 The Partners menu item appears once the first partner exists.
 
