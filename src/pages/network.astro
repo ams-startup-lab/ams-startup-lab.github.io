@@ -11,16 +11,16 @@ const logoHeight = (logo: string) => {
   const ratio = png.readUInt32BE(16) / png.readUInt32BE(20);
   return Math.round(Math.min(64, Math.sqrt(6000 / ratio)));
 };
-const intro = (await siteTexts()).page_intros.partners;
+const intro = (await siteTexts()).page_intros.network;
 const all = (await getCollection('partners')).sort((a, b) => a.data.order - b.data.order || a.data.name.localeCompare(b.data.name));
 const walls = [
   { heading: '', items: all.filter((p) => p.data.group === 'external') },
   { heading: 'Our friends at the UvA', items: all.filter((p) => p.data.group === 'uva') },
 ].filter((w) => w.items.length);
 ---
-<Base title="Partners" description={intro.text}>
+<Base title="Network" description={intro.text}>
   <section class="page-head"><h1>{intro.heading}</h1><p>{intro.text}</p></section>
-  {all.length === 0 && <section class="block"><p>Our partner list is being prepared.</p></section>}
+  {all.length === 0 && <section class="block"><p>This list is being prepared.</p></section>}
   {walls.map((w) => (
   <section class="flush">
     {w.heading && <h2 class="bar mono">{w.heading}</h2>}

@@ -11,5 +11,6 @@ export default defineConfig({
     '/events-1': '/activities',
     '/projects': '/activities',
     '/events': '/activities',
+    '/partners': '/network',
   },
 });
