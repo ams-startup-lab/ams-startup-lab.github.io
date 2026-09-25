@@ -3,16 +3,21 @@
 // a growth curve, a canal street, and finally the lab's name. It plays once per
 // browser session, stops on the title, and can be skipped with a click, a key or
 // a scroll. Visitors who prefer reduced motion see the final frame only.
-// The heading and tagline are real text, so screen readers and search engines read them.
+// A control bar replays the whole intro or one chapter. The tagline is real text.
 const tagline = 'Evidence on what makes startups succeed, scale, or stumble.';
+const chapters = ['Idea', 'People', 'Process', 'Place', 'Lab'];
 ---
-<section class="intro flush" aria-labelledby="intro-h">
-  <h1 id="intro-h" class="sr">Amsterdam Startup Lab</h1>
+<section class="intro flush" aria-label="Animated introduction">
   <div class="stage">
     <canvas aria-hidden="true"></canvas>
-    <p class="cap mono" aria-hidden="true"></p>
     <p class="sub"><span class="txt"><span class="full">{tagline}</span><span class="typed" aria-hidden="true"></span></span></p>
-    <button class="replay mono" type="button" hidden>Replay ↻</button>
+    <div class="ctrl">
+      <p class="cap mono" aria-hidden="true"></p>
+      <div class="btns">
+        {chapters.map((c, k) => <button class="mono ch" type="button" data-k={k} aria-label={`Play from chapter ${k + 1}: ${c}`}>0{k + 1}<span class="nm"> {c}</span></button>)}
+        <button class="mono replay" type="button">Replay ↻</button>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -20,23 +25,27 @@ const tagline = 'Evidence on what makes startups succeed, scale, or stumble.';
   .intro { border-bottom: var(--line); }
   .stage { position: relative; display: grid; container-type: inline-size; }
   canvas { grid-area: 1 / 1; display: block; width: 100%; aspect-ratio: 1920 / 900; }
-  .stage.playing canvas { cursor: pointer; }
-  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  canvas { cursor: pointer; }
   /* Positions below are in container width units, so they track the canvas (900/1920 = 46.875cqw tall). */
-  .cap { position: absolute; left: 3.1cqw; top: 42.5cqw; }
   .sub { position: absolute; left: 61.5cqw; top: 23.8cqw; width: 32cqw; font-family: var(--monof); font-size: max(13px, 1.75cqw); line-height: 1.45; }
   .sub::before { content: ''; display: block; height: 2px; width: calc(var(--rule-p, 1) * 100%); background: var(--ink); margin-bottom: .8em; }
   .txt { position: relative; display: block; max-width: 25ch; }
   .full { color: transparent; }
   .typed { position: absolute; inset: 0; }
   .typed i { display: inline-block; width: .55em; height: 1em; margin-left: .1em; vertical-align: -.15em; background: var(--ink); }
-  .replay { position: absolute; right: 1.6cqw; top: calc(46.875cqw - 40px); background: none; border: 0; color: var(--muted); cursor: pointer; padding: 6px 8px; }
-  .replay:hover { background: var(--hl); color: var(--hl-ink); }
+  .ctrl { grid-area: 2 / 1; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 16px; padding: 10px var(--gutter); border-top: 1px solid var(--rule); }
+  .cap { flex: 1 1 30ch; min-height: 1.5em; white-space: nowrap; overflow: hidden; }
+  .btns { display: flex; flex-wrap: wrap; gap: 4px; }
+  .btns button { font-size: 12px; background: none; border: 0; color: var(--muted); cursor: pointer; padding: 5px 8px; }
+  .btns button:hover, .btns .on { background: var(--hl); color: var(--hl-ink); }
+  .btns .replay { color: var(--ink); border: 1.5px solid var(--ink); margin-left: 8px; }
   @container (max-width: 699px) {
-    /* Phones: the caption and tagline share a slot below the canvas. */
-    .cap, .sub { position: static; grid-area: 2 / 1; width: auto; padding: 14px var(--gutter) 18px; }
-    .sub { font-size: 14px; }
-    .replay { top: calc(46.875cqw - 34px); padding: 4px 6px; }
+    /* Phones: caption and tagline take turns in one slot below the canvas; chapters show numbers only. */
+    .sub { position: static; grid-area: 2 / 1; width: auto; padding: 14px var(--gutter) 18px; font-size: 14px; }
+    .ctrl { display: contents; }
+    .cap { grid-area: 2 / 1; align-self: start; padding: 14px var(--gutter); white-space: normal; }
+    .btns { grid-area: 3 / 1; padding: 10px var(--gutter); border-top: 1px solid var(--rule); }
+    .nm { display: none; }
   }
 </style>
 
@@ -50,6 +59,7 @@ const tagline = 'Evidence on what makes startups succeed, scale, or stumble.';
     const subEl = stage.querySelector<HTMLElement>('.sub')!;
     const typedEl = stage.querySelector<HTMLElement>('.typed')!;
     const replay = stage.querySelector<HTMLButtonElement>('.replay')!;
+    const chBtns = [...stage.querySelectorAll<HTMLButtonElement>('.ch')];
     const TAGLINE = stage.querySelector('.full')!.textContent!;
 
     // Logical drawing space: 1920 wide, 900 tall (the scene coordinates run from y = 90 to 990).
@@ -367,6 +377,9 @@ const tagline = 'Evidence on what makes startups succeed, scale, or stumble.';
       const n = Math.floor(TAGLINE.length * seg(e, 1.1, 1.9));
       typedEl.textContent = TAGLINE.slice(0, n);
       if (e > 1.1 && t < T_END && Math.floor(t * 2.5) % 2 === 0) typedEl.append(document.createElement('i'));
+      let k = -1;
+      if (playing) for (let i = 0; i < 5; i++) if (t >= S[i] - .2) k = i;
+      chBtns.forEach((b, i) => b.classList.toggle('on', i === k));
     }
 
     function render(t: number) {
@@ -393,20 +406,21 @@ const tagline = 'Evidence on what makes startups succeed, scale, or stumble.';
       render(t);
       requestAnimationFrame(tick);
     }
-    function play() {
-      t = 0; playing = true; last = performance.now();
-      replay.hidden = true; stage.classList.add('playing');
+    function play(from = 0) {
+      t = from; playing = true; last = performance.now();
+      stage.classList.add('playing');
       requestAnimationFrame(tick);
     }
     function finish() {
       playing = false; t = T_END;
-      stage.classList.remove('playing'); replay.hidden = false;
+      stage.classList.remove('playing');
       render(t);
     }
     const skip = () => { if (playing) finish(); };
-    cv.addEventListener('pointerdown', skip);
+    cv.addEventListener('click', () => playing ? finish() : play());
     for (const ev of ['keydown', 'wheel', 'touchmove', 'scroll']) addEventListener(ev, skip, { passive: true });
-    replay.addEventListener('click', play);
+    replay.addEventListener('click', () => play());
+    chBtns.forEach((b, k) => b.addEventListener('click', () => play(k ? S[k] : 0)));
     new ResizeObserver(() => { fit(); render(t); }).observe(cv);
     matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { readTheme(); render(t); });
 
