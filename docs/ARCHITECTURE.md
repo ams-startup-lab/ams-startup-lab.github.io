@@ -16,7 +16,8 @@ GitHub issues (suggestions)                                                     
 | --- | --- | --- |
 | Site | `src/`, Astro | Turns data files into pages |
 | Schemas | `src/content.config.ts` | Rejects malformed data at build time |
-| Data | `data/` | One file per member, publication, news item, event, project |
+| Pages | `src/pages/` | Home (with the motion intro), Team, Publications, Activities, Network, News |
+| Data | `data/` | One file per member, publication, news item, event, project, activity, and network organisation |
 | Fetch scripts | `pipeline/` | Deterministic collection from sources. No judgement |
 | Routine prompt | `ROUTINE_PROMPT.md` | The weekly job: judge, write files, open pull requests, write the digest |
 | Workflows | `.github/workflows/` | Build, deploy, auto-merge gate, record rejections, heartbeat, link check |

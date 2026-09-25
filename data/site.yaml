@@ -18,10 +18,6 @@ contact:
   email: startuplab-abs@uva.nl
   email_href: mailto:startuplab-abs@uva.nl
   address: Plantage Muidergracht 12, 1018TV, Amsterdam, The Netherlands
-footer: © 2024 - Amsterdam Startup Lab
-logo_url: https://static.wixstatic.com/media/b65966_aaa0415de5df4352ad7b420574811321~mv2.png
-hero_image_url: https://static.wixstatic.com/media/daa120_4bcbe761026649f4a2d6c6875f26af9e~mv2.jpg
-social_links: []
 page_intros:
   team:
     heading: Meet the Team
@@ -29,9 +25,6 @@ page_intros:
   publications:
     heading: Publications
     text: Recent peer-reviewed work by ASL members
-  projects:
-    heading: Projects
-    text: What we are currently busy with
   activities:
     heading: Activities
     text: What we do besides papers, from research projects to teaching, academic service and talks
@@ -41,7 +34,3 @@ page_intros:
   news:
     heading: News & Media
     text: 🤩 ASL work in the media 🤩
-  events:
-    heading: Our Upcoming Events
-    text: Join us next time!
-    empty: No events at the moment
