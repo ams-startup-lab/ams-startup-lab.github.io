@@ -12,7 +12,7 @@ const logoHeight = (logo: string) => {
   return Math.round(Math.min(64, Math.sqrt(6000 / ratio)));
 };
 const intro = (await siteTexts()).page_intros.network;
-const all = (await getCollection('partners')).sort((a, b) => a.data.order - b.data.order || a.data.name.localeCompare(b.data.name));
+const all = (await getCollection('network')).sort((a, b) => a.data.order - b.data.order || a.data.name.localeCompare(b.data.name));
 const walls = [
   { heading: '', items: all.filter((p) => p.data.group === 'external') },
   { heading: 'Our friends at the UvA', items: all.filter((p) => p.data.group === 'uva') },

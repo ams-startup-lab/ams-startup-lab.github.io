@@ -77,7 +77,6 @@ const projects = defineCollection({
     title: z.string(),
     status: z.enum(['active', 'completed']).default('active'),
     order: z.number().int().default(100),
-    partners: z.array(z.string()).default([]),
     members: z.array(slug).default([]),
     summary: z.string(),
     url: z.string().url().optional(),
@@ -85,7 +84,7 @@ const projects = defineCollection({
 });
 
 // What the lab does besides papers, shown on the Activities page next to projects and
-// events. Added by hand, like partners; the weekly routine never adds activities.
+// events. Added by hand, like network organisations; the weekly routine never adds activities.
 const activities = defineCollection({
   loader: glob({ pattern: '*.yaml', base: './data/activities' }),
   schema: z.object({
@@ -103,21 +102,21 @@ const activities = defineCollection({
   }),
 });
 
-// Organisations the lab has worked with, shown as a logo wall. A partner is listed
+// Organisations the lab has worked with, shown as a logo wall on the Network page. One is listed
 // only after the member confirmed it may be named; a logo needs separate permission.
-const partners = defineCollection({
-  loader: glob({ pattern: '*.yaml', base: './data/partners' }),
+const network = defineCollection({
+  loader: glob({ pattern: '*.yaml', base: './data/network' }),
   schema: z.object({
     name: z.string(),
     url: z.string().url(),
     group: z.enum(['external', 'uva']).default('external'), // 'uva': shown under "Our friends at the UvA"
-    members: z.array(slug).min(1), // who works or worked with the partner
-    confirmed: isoDate, // date the member confirmed the partner may be named
-    logo: z.string().regex(/^\/partners\/[a-z0-9-]+\.png$/).optional(), // PNG with transparent background
-    logo_permission: isoDate.optional(), // date the partner allowed use of its logo
+    members: z.array(slug).min(1), // who works or worked with the organisation
+    confirmed: isoDate, // date the member confirmed the organisation may be named
+    logo: z.string().regex(/^\/network\/[a-z0-9-]+\.png$/).optional(), // PNG with transparent background
+    logo_permission: isoDate.optional(), // date the organisation allowed use of its logo
     order: z.number().int().default(100),
   }).strict().refine((p) => !p.logo || p.logo_permission, {
-    message: 'a logo needs logo_permission: the date the partner allowed its use',
+    message: 'a logo needs logo_permission: the date the organisation allowed its use',
     path: ['logo_permission'],
   }),
 });
@@ -128,4 +127,4 @@ const site = defineCollection({
   schema: z.object({ name: z.string() }).passthrough(),
 });
 
-export const collections = { site, members, publications, news, events, projects, activities, partners };
+export const collections = { site, members, publications, news, events, projects, activities, network };
