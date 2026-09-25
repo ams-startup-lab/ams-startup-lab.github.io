@@ -52,7 +52,7 @@ const chapters = ['Idea', 'People', 'Process', 'Environment', 'Lab'];
   .typed { position: absolute; inset: 0; }
   .typed i { display: inline-block; width: .55em; height: 1em; margin-left: .1em; vertical-align: -.15em; background: var(--ink); }
   .ctrl { grid-area: 2 / 1; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 16px; padding: 10px var(--gutter); border-top: 1px solid var(--rule); }
-  .cap { flex: 1 1 30ch; min-height: 1.5em; white-space: nowrap; overflow: hidden; }
+  .cap { flex: 1 1 100%; min-height: 1.5em; }   /* own row, so long captions never get cut off */
   .btns { display: flex; flex-wrap: wrap; gap: 4px; }
   .btns button { font-size: 12px; background: none; border: 0; color: var(--muted); cursor: pointer; padding: 5px 8px; }
   .btns button:hover, .btns .on { background: var(--hl); color: var(--hl-ink); }
@@ -63,7 +63,7 @@ const chapters = ['Idea', 'People', 'Process', 'Environment', 'Lab'];
     /* Phones: caption and tagline take turns in one slot below the canvas; chapters show numbers only. */
     .sub { position: static; grid-area: 2 / 1; width: auto; padding: 14px var(--gutter) 18px; font-size: 14px; }
     .ctrl { display: contents; }
-    .cap { grid-area: 2 / 1; align-self: start; padding: 14px var(--gutter); white-space: normal; }
+    .cap { grid-area: 2 / 1; align-self: start; padding: 14px var(--gutter); }
     .btns { grid-area: 3 / 1; padding: 10px var(--gutter); border-top: 1px solid var(--rule); }
     .btns .replay { margin-left: 4px; }
     .nm { display: none; }
