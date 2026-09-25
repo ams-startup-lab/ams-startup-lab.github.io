@@ -59,8 +59,8 @@ const latest = allNews[0];
     <ul>{allNews.slice(0, 4).map((item) => <NewsItem item={item} />)}</ul>
   </section>
 
-  <section id="contact" class="block top">
-    <h2 class="label">{site.contact.heading}</h2>
+  <section id="contact" class="contact flush top" aria-labelledby="contact-h">
+    <h2 id="contact-h" class="bar mono">{site.contact.heading}</h2>
     <div class="prose">
       <p>{site.contact.text}</p>
       <p><a href={site.contact.email_href}>{site.contact.email}</a><br />{site.contact.address}</p>
@@ -78,7 +78,8 @@ const latest = allNews[0];
   .spot a:hover { background: var(--hl-ink); color: var(--hl); }
   .top { border-top: var(--line); margin-top: -1px; }
   .about { border-bottom: var(--line); }
-  .about .bar { margin: 0; font-weight: 400; }
+  .about .bar, .contact .bar { margin: 0; font-weight: 400; }
+  .contact .prose { padding: 28px var(--gutter) 40px; font-size: 16px; line-height: 1.6; }
   .about .cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .about .cols > div { padding: 28px var(--gutter) 32px; display: flex; flex-direction: column; }
   .about .cols > div + div { border-left: 1px solid var(--rule); }
