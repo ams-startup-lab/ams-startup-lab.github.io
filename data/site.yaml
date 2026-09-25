@@ -32,6 +32,9 @@ page_intros:
   projects:
     heading: Projects
     text: What we are currently busy with
+  activities:
+    heading: Activities
+    text: What we do besides papers, from research projects to teaching, academic service and talks
   partners:
     heading: Partners
     text: Organisations we have worked with

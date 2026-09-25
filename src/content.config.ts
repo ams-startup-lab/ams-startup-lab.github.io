@@ -84,6 +84,22 @@ const projects = defineCollection({
   }).strict(),
 });
 
+// What the lab does besides papers, shown on the Activities page next to projects and
+// events. Added by hand, like partners; the weekly routine never adds activities.
+const activities = defineCollection({
+  loader: glob({ pattern: '*.yaml', base: './data/activities' }),
+  schema: z.object({
+    title: z.string(),
+    kind: z.enum(['teaching', 'service', 'talk']), // teaching and executive education; academic service; talks and expert input
+    year: z.number().int(),
+    until: z.union([z.number().int(), z.literal('present')]).optional(), // for roles or courses that run over several years
+    summary: z.string(),
+    url: z.string().url().optional(),
+    members: z.array(slug).min(1),
+    order: z.number().int().default(100),
+  }).strict(),
+});
+
 // Organisations the lab has worked with, shown as a logo wall. A partner is listed
 // only after the member confirmed it may be named; a logo needs separate permission.
 const partners = defineCollection({
@@ -109,4 +125,4 @@ const site = defineCollection({
   schema: z.object({ name: z.string() }).passthrough(),
 });
 
-export const collections = { site, members, publications, news, events, projects, partners };
+export const collections = { site, members, publications, news, events, projects, activities, partners };

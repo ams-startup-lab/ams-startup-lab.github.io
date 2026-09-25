@@ -1,0 +1,73 @@
+---
+// Everything the lab does besides papers: upcoming events, research projects, and the
+// activities in data/activities (teaching, academic service, talks). Empty groups are
+// hidden on the live site and shown as placeholders in the local preview.
+import Base from '../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+import { siteTexts, events, fmtDate } from '../lib';
+const intro = (await siteTexts()).page_intros.activities;
+const people = Object.fromEntries((await getCollection('members')).map((m) => [m.id, m.data.name]));
+const names = (ids: string[]) => ids.map((id) => people[id] ?? id).join(', ');
+const { upcoming } = await events();
+const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+const all = (await getCollection('activities')).sort((a, b) => a.data.order - b.data.order || b.data.year - a.data.year);
+const groups = [
+  ['teaching', 'Teaching and executive education'],
+  ['service', 'Academic service'],
+  ['talk', 'Talks and expert input'],
+].map(([kind, heading]) => ({ heading, items: all.filter((a) => a.data.kind === kind) }));
+const years = (d: { year: number, until?: number | 'present' }) =>
+  !d.until ? `${d.year}` : d.until === 'present' ? `Since ${d.year}` : `${d.year}–${d.until}`;
+const preview = import.meta.env.DEV;
+---
+<Base title="Activities" description={intro.text}>
+  <section class="page-head"><h1>{intro.heading}</h1><p>{intro.text}</p></section>
+
+  {upcoming.length > 0 && (
+    <section class="flush">
+      <div class="bar mono"><h2>Upcoming</h2></div>
+      <ul>{upcoming.map((e) => (
+        <li class="row">
+          <div class="mono lead">{fmtDate(e.data.date)}</div>
+          <div>
+            <h3>{e.data.url ? <a href={e.data.url}>{e.data.title}</a> : e.data.title}</h3>
+            {(e.data.location || e.data.description) && <p class="meta">{[e.data.location, e.data.description].filter(Boolean).join(' · ')}</p>}
+          </div>
+          <div class="mono side">Event</div>
+        </li>))}</ul>
+    </section>
+  )}
+
+  <section class="flush">
+    <div class="bar mono top"><h2>Research projects</h2></div>
+    <ul>{projects.map((p) => (
+      <li class="row">
+        <div class="mono lead">{p.data.status === 'completed' ? 'Completed' : 'Ongoing'}</div>
+        <div>
+          <h3>{p.data.url ? <a href={p.data.url} rel="noopener">{p.data.title}</a> : p.data.title}</h3>
+          <p class="meta">{p.data.summary}</p>
+        </div>
+        <div class="mono side">{names(p.data.members)}</div>
+      </li>))}</ul>
+  </section>
+
+  {groups.filter((g) => g.items.length > 0 || preview).map((g) => (
+    <section class="flush">
+      <div class="bar mono top"><h2>{g.heading}</h2></div>
+      {g.items.length === 0 && <p class="empty mono">Preview only: nothing listed yet. This group is hidden on the live site until it has items.</p>}
+      <ul>{g.items.map((a) => (
+        <li class="row">
+          <div class="mono lead">{years(a.data)}</div>
+          <div>
+            <h3>{a.data.url ? <a href={a.data.url} rel="noopener">{a.data.title}</a> : a.data.title}</h3>
+            <p class="meta">{a.data.summary}</p>
+          </div>
+          <div class="mono side">{names(a.data.members)}</div>
+        </li>))}</ul>
+    </section>
+  ))}
+</Base>
+
+<style>
+  .empty { padding: 20px var(--gutter); color: var(--muted); border: 1.5px dashed var(--rule); margin: 16px var(--gutter); }
+</style>
