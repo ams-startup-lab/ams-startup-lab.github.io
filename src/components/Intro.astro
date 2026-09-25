@@ -1,0 +1,418 @@
+---
+// Home page hero: a short motion intro drawn on a canvas. An idea becomes a team,
+// a growth curve, a canal street, and finally the lab's name. It plays once per
+// browser session, stops on the title, and can be skipped with a click, a key or
+// a scroll. Visitors who prefer reduced motion see the final frame only.
+// The heading and tagline are real text, so screen readers and search engines read them.
+const tagline = 'Evidence on what makes startups succeed, scale, or stumble.';
+---
+<section class="intro flush" aria-labelledby="intro-h">
+  <h1 id="intro-h" class="sr">Amsterdam Startup Lab</h1>
+  <div class="stage">
+    <canvas aria-hidden="true"></canvas>
+    <p class="cap mono" aria-hidden="true"></p>
+    <p class="sub"><span class="txt"><span class="full">{tagline}</span><span class="typed" aria-hidden="true"></span></span></p>
+    <button class="replay mono" type="button" hidden>Replay ↻</button>
+  </div>
+</section>
+
+<style>
+  .intro { border-bottom: var(--line); }
+  .stage { position: relative; display: grid; container-type: inline-size; }
+  canvas { grid-area: 1 / 1; display: block; width: 100%; aspect-ratio: 1920 / 900; }
+  .stage.playing canvas { cursor: pointer; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  /* Positions below are in container width units, so they track the canvas (900/1920 = 46.875cqw tall). */
+  .cap { position: absolute; left: 3.1cqw; top: 42.5cqw; }
+  .sub { position: absolute; left: 61.5cqw; top: 23.8cqw; width: 32cqw; font-family: var(--monof); font-size: max(13px, 1.75cqw); line-height: 1.45; }
+  .sub::before { content: ''; display: block; height: 2px; width: calc(var(--rule-p, 1) * 100%); background: var(--ink); margin-bottom: .8em; }
+  .txt { position: relative; display: block; max-width: 25ch; }
+  .full { color: transparent; }
+  .typed { position: absolute; inset: 0; }
+  .typed i { display: inline-block; width: .55em; height: 1em; margin-left: .1em; vertical-align: -.15em; background: var(--ink); }
+  .replay { position: absolute; right: 1.6cqw; top: calc(46.875cqw - 40px); background: none; border: 0; color: var(--muted); cursor: pointer; padding: 6px 8px; }
+  .replay:hover { background: var(--hl); color: var(--hl-ink); }
+  @container (max-width: 699px) {
+    /* Phones: the caption and tagline share a slot below the canvas. */
+    .cap, .sub { position: static; grid-area: 2 / 1; width: auto; padding: 14px var(--gutter) 18px; }
+    .sub { font-size: 14px; }
+    .replay { top: calc(46.875cqw - 34px); padding: 4px 6px; }
+  }
+</style>
+
+<script>
+  const stage = document.querySelector<HTMLElement>('.intro .stage');
+  if (stage) intro(stage);
+
+  function intro(stage: HTMLElement) {
+    const cv = stage.querySelector('canvas')!, ctx = cv.getContext('2d')!;
+    const capEl = stage.querySelector<HTMLElement>('.cap')!;
+    const subEl = stage.querySelector<HTMLElement>('.sub')!;
+    const typedEl = stage.querySelector<HTMLElement>('.typed')!;
+    const replay = stage.querySelector<HTMLButtonElement>('.replay')!;
+    const TAGLINE = stage.querySelector('.full')!.textContent!;
+
+    // Logical drawing space: 1920 wide, 900 tall (the scene coordinates run from y = 90 to 990).
+    const W = 1920, SH = 900, OY = 90;
+    const S = [0.2, 1.5, 3.2, 5.0, 7.0];   // scene starts: idea, people, process, place, title
+    const T_END = 9.0;
+    const C = { x: 960, y: 540 };
+    let BG = '', INK = '', HL = '', HLINK = '', CARD = '', RULE = '', DIP = '', SANS = '', MONO = '';
+    let scale = 1;
+
+    function readTheme() {
+      const cs = getComputedStyle(document.documentElement), v = (n: string) => cs.getPropertyValue(n).trim();
+      BG = v('--bg'); INK = v('--ink'); HL = v('--hl'); HLINK = v('--hl-ink'); CARD = v('--card'); RULE = v('--rule');
+      SANS = v('--sans'); MONO = v('--monof');
+      DIP = matchMedia('(prefers-color-scheme: dark)').matches ? '#2b2a27' : '#e2e1da';
+    }
+
+    // easing
+    const clamp = (x: number, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+    const seg = (t: number, a: number, b: number) => clamp((t - a) / (b - a));
+    const lerp = (a: number, b: number, p: number) => a + (b - a) * p;
+    const eo3 = (p: number) => 1 - Math.pow(1 - p, 3);
+    const ei3 = (p: number) => p * p * p;
+    const eio3 = (p: number) => p < .5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+    const eoExpo = (p: number) => p >= 1 ? 1 : 1 - Math.pow(2, -10 * p);
+    const eoBack = (p: number) => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(p - 1, 3) + c1 * Math.pow(p - 1, 2); };
+    const eoBounce = (p: number) => {
+      const n = 7.5625, d = 2.75;
+      if (p < 1 / d) return n * p * p;
+      if (p < 2 / d) return n * (p -= 1.5 / d) * p + .75;
+      if (p < 2.5 / d) return n * (p -= 2.25 / d) * p + .9375;
+      return n * (p -= 2.625 / d) * p + .984375;
+    };
+    const hash = (n: number) => { n = Math.imul(n ^ n >>> 16, 0x45d9f3b); n = Math.imul(n ^ n >>> 16, 0x45d9f3b); return ((n ^ n >>> 16) >>> 0) / 4294967296; };
+    const rng = (s: number) => () => { s = s + 0x6D2B79F5 | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+    const rgb = (h: string) => { h = h.replace('#', ''); if (h.length === 3) h = [...h].map(c => c + c).join(''); const v = parseInt(h, 16); return [v >> 16 & 255, v >> 8 & 255, v & 255]; };
+    const mix = (a: string, b: string, p: number) => { const A = rgb(a), B = rgb(b); return `rgb(${A.map((v, i) => Math.round(v + (B[i] - v) * p)).join(',')})`; };
+
+    // ---------- geometry ----------
+    type Pt = { x: number, y: number };
+    const N = 12, R = rng(7);
+    const targets: Pt[] = [{ x: 0, y: 0 }];
+    for (let i = 1; i < N; i++) {
+      const a = (i - 1) / (N - 1) * Math.PI * 2 - Math.PI / 2 + (R() - .5) * .35;
+      const r = (i % 2 ? 330 : 205) + (R() - .5) * 50;
+      targets.push({ x: Math.cos(a) * r, y: Math.sin(a) * r * .78 });
+    }
+    const EDGES: [number, number, string][] = [];
+    for (let i = 1; i < N; i++) EDGES.push([0, i, 'spoke']);
+    for (let i = 1; i < N; i++) EDGES.push([i, i % (N - 1) + 1, 'ring']);
+    for (const [a, b] of [[1, 4], [4, 8], [8, 1], [2, 7], [6, 11], [3, 10]]) EDGES.push([a, b, 'chord']);
+
+    const BASE = 820, X0 = 300, SLOT = 110, BW = 76, G = 120;
+    const HB = [130, 165, 190, 170, 120, 95, 140, 205, 285, 380, 490, 600];   // bars: a dip, then growth
+    const HH = [300, 350, 280, 370, 320, 300, 390, 330, 290, 360, 310, 345];  // canal house bodies
+    const GABLE = ['step', 'neck', 'bell', 'spout', 'cornice', 'step', 'neck', 'bell', 'step', 'spout', 'neck', 'bell'];
+    const barX = (j: number) => X0 + j * SLOT + (SLOT - BW) / 2;
+    const barOf = (i: number) => i === 0 ? 11 : i - 1;
+    const nodeOf = (j: number) => j === 11 ? 0 : j + 1;
+
+    const bell = [[0, 0], [0, .28], [.16, .28]];
+    for (let k = 0; k <= 16; k++) { const u = k / 16; bell.push([.16 + u * .68, .28 + .72 * Math.pow(Math.sin(Math.PI * u), .55)]); }
+    bell.push([.84, .28], [1, .28], [1, 0]);
+    const SHAPES: Record<string, number[][]> = {
+      step: [[0, 0], [0, .22], [.14, .22], [.14, .46], [.28, .46], [.28, .7], [.4, .7], [.4, .95], [.6, .95], [.6, .7], [.72, .7], [.72, .46], [.86, .46], [.86, .22], [1, .22], [1, 0]],
+      neck: [[0, 0], [0, .3], [.2, .3], [.3, .42], [.3, .86], [.5, 1.02], [.7, .86], [.7, .42], [.8, .3], [1, .3], [1, 0]],
+      spout: [[0, 0], [0, .12], [.5, .9], [1, .12], [1, 0]],
+      cornice: [[0, 0], [0, .12], [-.05, .12], [-.05, .22], [1.05, .22], [1.05, .12], [1, .12], [1, 0]],
+      bell,
+    };
+
+    const WINDOWS: { j: number, f: number, col: number, lit: boolean, litT: number }[] = [];
+    {
+      const r = rng(21);
+      for (let j = 0; j < 12; j++) {
+        const floors = Math.floor((HH[j] - 50) / 80);
+        for (let f = 0; f < floors; f++) for (let col = 0; col < 2; col++)
+          WINDOWS.push({ j, f, col, lit: r() < .3 && j !== 11, litT: 1.25 + r() * .6 });
+      }
+    }
+
+    // ---------- animated quantities ----------
+    const rotate = (v: Pt, a: number) => { const c = Math.cos(a), s = Math.sin(a); return { x: v.x * c - v.y * s, y: v.x * s + v.y * c }; };
+    const barH = (j: number, t: number) => HB[j] * eoBack(seg(t - S[2], .45 + j * .05, .95 + j * .05));
+    function nodeR(i: number, t: number) {
+      let r;
+      if (i === 0) {
+        r = 56 * eoBack(seg(t - S[0], 0, .5));
+        r = lerp(r, 30, eio3(seg(t - S[1], 0, .4)));
+        r = lerp(r, 22, eio3(seg(t - S[2], 0, .5)));
+      } else r = 16 * eoBack(seg(t - S[1], i * .025, .35 + i * .025));
+      const j = barOf(i);
+      return Math.max(0, r * (1 - eio3(seg(t - S[3], j * .02, .3 + j * .02))));
+    }
+    function nodePos2(i: number, t: number): Pt {
+      if (i === 0) return { x: C.x, y: C.y };
+      const q = eoExpo(seg(t - S[1], .05 + i * .025, .75 + i * .025));
+      const v = rotate(targets[i], .4 * eio3(seg(t, S[1], S[2] + .3)));
+      return { x: C.x + v.x * q, y: C.y + v.y * q };
+    }
+    function nodePos(i: number, t: number): Pt {
+      const p = nodePos2(i, t), j = barOf(i);
+      const q = eio3(seg(t - S[2], j * .025, .5 + j * .025));
+      if (q <= 0) return p;
+      return { x: lerp(p.x, barX(j) + BW / 2, q), y: lerp(p.y, BASE - barH(j, t) - nodeR(i, t), q) };
+    }
+    function house(j: number, t: number) {
+      const d = t - S[3];
+      const m = eio3(seg(d, .1 + j * .035, .7 + j * .035));
+      return {
+        m,
+        x: lerp(barX(j), X0 + j * SLOT, m),
+        w: lerp(BW, SLOT, m),
+        top: lerp(BASE - barH(j, t), BASE - HH[j], m),
+        p: eoBack(seg(d, .45 + j * .035, .95 + j * .035)),
+        dy: 900 * ei3(seg(t - S[4], j * .025, .45 + j * .025)),
+        fill: j === 11 ? HL : (j === 4 || j === 5 ? mix(DIP, CARD, m) : CARD),
+      };
+    }
+
+    // ---------- drawing helpers ----------
+    function circle(x: number, y: number, r: number, fill: string | null, stroke?: string, lw = 2) {
+      if (r <= .1) return;
+      ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
+      if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+      if (stroke) { ctx.lineWidth = lw; ctx.strokeStyle = stroke; ctx.stroke(); }
+    }
+    function line(x1: number, y1: number, x2: number, y2: number, color: string, lw: number) {
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
+      ctx.strokeStyle = color; ctx.lineWidth = lw; ctx.stroke();
+    }
+    function text(s: string, x: number, y: number, font: string, color: string, align: CanvasTextAlign = 'left', spacing = '0px') {
+      ctx.font = font; ctx.fillStyle = color; ctx.textAlign = align; ctx.letterSpacing = spacing;
+      ctx.fillText(s, x, y);
+      ctx.letterSpacing = '0px';
+    }
+    function block(h: ReturnType<typeof house>, shape: string) {
+      ctx.beginPath(); ctx.moveTo(h.x, BASE + h.dy);
+      for (const [u, y] of SHAPES[shape]) ctx.lineTo(h.x + u * h.w, h.top + h.dy - y * G * h.p);
+      ctx.lineTo(h.x + h.w, BASE + h.dy); ctx.closePath();
+      ctx.fillStyle = h.fill; ctx.fill();
+      ctx.lineJoin = 'miter'; ctx.lineWidth = 2.5; ctx.strokeStyle = INK; ctx.stroke();
+    }
+
+    // ---------- scenes ----------
+    function sceneIdea(t: number) {
+      const a = t - S[0], fade = 1 - seg(t, S[1] - .1, S[1] + .3);
+      if (fade <= 0 || a <= 0) return;
+      ctx.globalAlpha = fade;
+      const L = 880 * eo3(seg(a, .2, .75));
+      line(C.x - L, C.y, C.x + L, C.y, RULE, 1.5);
+      line(C.x, C.y - L * .45, C.x, C.y + L * .45, RULE, 1.5);
+      for (let k = -14; k <= 14; k++) if (k && Math.abs(k * 60) < L) line(C.x + k * 60, C.y - 6, C.x + k * 60, C.y + 6, RULE, 1.5);
+      for (const s of [.45, .75]) {
+        const q = seg(a, s, s + .9);
+        if (q > 0 && q < 1) { ctx.globalAlpha = fade * (1 - q); circle(C.x, C.y, 56 + 300 * eo3(q), null, INK, 2); }
+      }
+      ctx.globalAlpha = 1;
+    }
+    function sceneEdges(t: number) {
+      if (t < S[1] || t > S[2] + .4) return;
+      const b = t - S[1], out = eio3(seg(t, S[2], S[2] + .35));
+      EDGES.forEach(([i, k, kind], n) => {
+        const st = kind === 'spoke' ? .35 + i * .03 : .7 + n * .025;
+        const prog = eo3(seg(b, st, st + .4));
+        if (prog <= 0) return;
+        const A = nodePos(i, t), B0 = nodePos(k, t);
+        const B = { x: lerp(A.x, B0.x, prog), y: lerp(A.y, B0.y, prog) };
+        const M = { x: (A.x + B.x) / 2, y: (A.y + B.y) / 2 };
+        line(lerp(A.x, M.x, out), lerp(A.y, M.y, out), lerp(B.x, M.x, out), lerp(B.y, M.y, out), kind === 'chord' ? RULE : INK, kind === 'chord' ? 2 : 2.5);
+      });
+    }
+    function scenePulses(t: number) {
+      const b = t - S[1];
+      if (b < 1 || t > S[2]) return;
+      for (let i = 1; i < N; i++) for (const [st, dir] of [[1 + i * .04, 1], [1.45 + i * .03, -1]]) {
+        const q = seg(b, st, st + .4);
+        if (q <= 0 || q >= 1) continue;
+        const A = nodePos(0, t), B = nodePos(i, t), e = eio3(q), p = dir > 0 ? e : 1 - e;
+        circle(lerp(A.x, B.x, p), lerp(A.y, B.y, p), 6, HL, INK, 2);
+      }
+    }
+    function sceneWater(t: number) {
+      const d = t - S[3], a = seg(d, .6, 1.2) * (1 - seg(t - S[4], 0, .3));
+      if (a <= 0) return;
+      ctx.save();
+      ctx.globalAlpha = .13 * a;   // reflection: mirrored houses in rippling strips
+      for (let y = BASE + 3; y < BASE + 160; y += 6) {
+        ctx.save();
+        ctx.beginPath(); ctx.rect(0, y, W, 6); ctx.clip();
+        ctx.translate(Math.sin(y * .09 + t * 6) * 5, 2 * BASE); ctx.scale(1, -1);
+        for (let j = 0; j < 12; j++) block(house(j, t), GABLE[j]);
+        ctx.restore();
+      }
+      const prog = eo3(seg(d, .6, 1.3));
+      for (let k = 0; k < 4; k++) {
+        const y0 = BASE + 34 + k * 30, x1 = X0 - 60, x2 = x1 + 1440 * prog;
+        ctx.beginPath();
+        for (let x = x1; x <= x2; x += 8) ctx.lineTo(x, y0 + Math.sin(x * .02 + t * 3 + k) * 4);
+        ctx.setLineDash([40 + k * 12, 22]); ctx.lineDashOffset = -t * 70 * (k % 2 ? 1 : -1);
+        ctx.strokeStyle = k === 1 ? HL : INK; ctx.lineWidth = k === 1 ? 4 : 2; ctx.globalAlpha = a * (k === 1 ? 1 : .45);
+        ctx.stroke();
+      }
+      ctx.setLineDash([]);
+      const bx = lerp(80, 1860, seg(d, .8, 2.7)), by = BASE + 70 + Math.sin(t * 5) * 3;   // a passing boat
+      ctx.globalAlpha = a;
+      ctx.beginPath(); ctx.moveTo(bx - 70, by - 16); ctx.lineTo(bx + 74, by - 16); ctx.lineTo(bx + 52, by + 8); ctx.lineTo(bx - 58, by + 8); ctx.closePath();
+      ctx.fillStyle = HL; ctx.fill(); ctx.lineWidth = 2.5; ctx.strokeStyle = INK; ctx.stroke();
+      ctx.beginPath(); ctx.rect(bx - 34, by - 40, 52, 24); ctx.fillStyle = CARD; ctx.fill(); ctx.stroke();
+      ctx.restore();
+    }
+    function sceneBaseline(t: number) {
+      const half = 700 * eo3(seg(t - S[2], 0, .5)) * (1 - eio3(seg(t - S[4], .2, .5)));
+      if (half > 1) line(C.x - half, BASE, C.x + half, BASE, INK, 3);
+    }
+    function sceneHouses(t: number) {
+      if (t < S[2] + .4 || t > S[4] + 1.1) return;
+      const d = t - S[3];
+      for (let j = 0; j < 12; j++) {
+        const h = house(j, t);
+        if (h.dy > 900 || (h.top > BASE - 1 && h.m === 0)) continue;
+        block(h, GABLE[j]);
+      }
+      for (const w of WINDOWS) {
+        const h = house(w.j, t);
+        const s = eoBack(seg(d, .9 + w.j * .03 + w.f * .04, 1.2 + w.j * .03 + w.f * .04));
+        if (s <= 0 || h.dy > 900) continue;
+        const cx = h.x + h.w * (w.col ? .68 : .32), cy = h.top + h.dy + 54 + w.f * 80, ww = 24 * s, wh = 40 * s;
+        const lit = w.lit && d > w.litT;
+        ctx.beginPath(); ctx.rect(cx - ww / 2, cy - wh / 2, ww, wh);
+        ctx.fillStyle = lit ? HL : (w.j === 11 ? HLINK : INK); ctx.fill();
+        if (lit) { ctx.lineWidth = 2; ctx.strokeStyle = INK; ctx.stroke(); }
+      }
+    }
+    function sceneCurve(t: number) {
+      const c = t - S[2], a = 1 - seg(t - S[3], 0, .25), prog = eio3(seg(c, 1.1, 1.65));
+      if (prog <= 0 || a <= 0) return;
+      const pts: Pt[] = [];
+      for (let j = 0; j < 12; j++) pts.push(nodePos(nodeOf(j), t));
+      const lens: number[] = []; let total = 0;
+      for (let k = 1; k < pts.length; k++) { const l = Math.hypot(pts[k].x - pts[k - 1].x, pts[k].y - pts[k - 1].y); lens.push(l); total += l; }
+      let left = total * prog;
+      ctx.globalAlpha = a;
+      ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y);
+      for (let k = 1; k < pts.length && left > 0; k++) {
+        const f = Math.min(1, left / lens[k - 1]);
+        ctx.lineTo(lerp(pts[k - 1].x, pts[k].x, f), lerp(pts[k - 1].y, pts[k].y, f));
+        left -= lens[k - 1];
+      }
+      ctx.strokeStyle = INK; ctx.lineWidth = 3; ctx.lineJoin = 'round'; ctx.stroke();
+      const n = seg(c, 1.4, 1.75), lift = (1 - eo3(n)) * 14;
+      if (n > 0) {
+        ctx.globalAlpha = a * n;
+        const p5 = pts[5], p11 = pts[11];
+        line(p5.x, p5.y - 26, p5.x, p5.y - 70 + lift, INK, 1.5);
+        text('stumble', p5.x, p5.y - 84 + lift, `500 24px ${MONO}`, INK, 'center');
+        line(p11.x - 34, p11.y, p11.x - 90, p11.y, INK, 1.5);
+        text('scale', p11.x - 104, p11.y + 8, `500 24px ${MONO}`, INK, 'right');
+      }
+      ctx.globalAlpha = 1;
+    }
+    function sceneNodes(t: number) {
+      if (t < S[0] || t > S[3] + .7) return;
+      for (let i = N - 1; i >= 0; i--) {
+        const p = nodePos(i, t), r = nodeR(i, t);
+        if (i === 0) circle(p.x, p.y, r, HL, INK, 3); else circle(p.x, p.y, r, INK);
+      }
+    }
+    const TITLE: [string, number][] = [['Amsterdam', 330], ['Startup', 530], ['Lab', 730]];
+    function sceneTitle(t: number) {
+      const e = t - S[4];
+      if (e <= 0) return;
+      const font = `800 210px ${SANS}`, X = 140;
+      ctx.font = font; ctx.letterSpacing = '-7px';
+      const widths = TITLE.map(([s]) => ctx.measureText(s).width);
+      ctx.letterSpacing = '0px';
+      const hp = eio3(seg(e, .8, 1.15)), hl = { x: X - 18, y: 530 - 164, w: (widths[1] + 36) * hp, h: 214 };
+      if (hp > 0) { ctx.fillStyle = HL; ctx.fillRect(hl.x, hl.y, hl.w, hl.h); }
+      TITLE.forEach(([s, y], k) => {
+        const p = eoExpo(seg(e, .35 + k * .12, .95 + k * .12));
+        if (p <= 0) return;
+        const ty = y + (1 - p) * 240;
+        ctx.save();
+        ctx.beginPath(); ctx.rect(0, y - 195, W, 250); ctx.clip();
+        text(s, X, ty, font, INK, 'left', '-7px');
+        if (k === 1 && hp > 0) {   // text over the highlight uses the highlight ink (matters in dark mode)
+          ctx.beginPath(); ctx.rect(hl.x, hl.y, hl.w, hl.h); ctx.clip();
+          text(s, X, ty, font, HLINK, 'left', '-7px');
+        }
+        ctx.restore();
+      });
+      const dp = seg(e, 1.0, 1.65);   // the idea returns as the full stop
+      if (dp > 0) {
+        const fx = X + widths[2] + 44, fy = 730 - 28;
+        circle(fx, lerp(fy - 640, fy, eoBounce(dp)), 28, HL, INK, 3);
+      }
+    }
+
+    // ---------- text overlays ----------
+    const CAPS = ['Every venture starts as a single idea.', 'People turn it into a team.', 'Processes decide whether it stumbles or scales.', 'Environments shape the outcome.'];
+    const GLYPHS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/<>_+#';
+    function caption(t: number) {
+      let k = 0;
+      for (let i = 0; i < 4; i++) if (t >= S[i]) k = i;
+      const p = t >= S[4] ? 1 - seg(t, S[4], S[4] + .4) : seg(t, S[k], S[k] + .6);
+      const s = CAPS[k], n = Math.floor(p * s.length), f = Math.floor(t * 30);
+      let out = s.slice(0, n);
+      if (p > 0) for (let i = 0; i < Math.min(8, s.length - n); i++) out += s[n + i] === ' ' ? ' ' : GLYPHS[Math.floor(hash(n + i + f * 97) * GLYPHS.length)];
+      return out;
+    }
+    function overlays(t: number) {
+      const e = t - S[4];
+      capEl.textContent = caption(t);
+      subEl.style.setProperty('--rule-p', String(eo3(seg(e, 1.0, 1.35))));
+      const n = Math.floor(TAGLINE.length * seg(e, 1.1, 1.9));
+      typedEl.textContent = TAGLINE.slice(0, n);
+      if (e > 1.1 && t < T_END && Math.floor(t * 2.5) % 2 === 0) typedEl.append(document.createElement('i'));
+    }
+
+    function render(t: number) {
+      ctx.setTransform(scale, 0, 0, scale, 0, -OY * scale);
+      ctx.fillStyle = BG; ctx.fillRect(0, OY, W, SH);
+      ctx.fillStyle = RULE;
+      for (let x = 60; x <= 1860; x += 60) for (let y = 120; y <= 960; y += 60) ctx.fillRect(x - 1, y - 1, 2.5, 2.5);
+      sceneIdea(t); sceneEdges(t); sceneWater(t); sceneBaseline(t); sceneHouses(t);
+      sceneCurve(t); sceneNodes(t); scenePulses(t); sceneTitle(t);
+      overlays(t);
+    }
+
+    // ---------- playback ----------
+    let t = 0, playing = false, last = 0;
+    function fit() {
+      const d = Math.min(2, devicePixelRatio || 1), w = cv.getBoundingClientRect().width;
+      cv.width = Math.round(w * d); cv.height = Math.round(w * d * SH / W);
+      scale = cv.width / W;
+    }
+    function tick(now: number) {
+      if (!playing) return;
+      t += Math.min(.05, (now - last) / 1000); last = now;   // capped step: a hidden tab resumes where it left off
+      if (t >= T_END) return finish();
+      render(t);
+      requestAnimationFrame(tick);
+    }
+    function play() {
+      t = 0; playing = true; last = performance.now();
+      replay.hidden = true; stage.classList.add('playing');
+      requestAnimationFrame(tick);
+    }
+    function finish() {
+      playing = false; t = T_END;
+      stage.classList.remove('playing'); replay.hidden = false;
+      render(t);
+    }
+    const skip = () => { if (playing) finish(); };
+    cv.addEventListener('pointerdown', skip);
+    for (const ev of ['keydown', 'wheel', 'touchmove', 'scroll']) addEventListener(ev, skip, { passive: true });
+    replay.addEventListener('click', play);
+    new ResizeObserver(() => { fit(); render(t); }).observe(cv);
+    matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { readTheme(); render(t); });
+
+    readTheme(); fit();
+    let seen = false;
+    try { seen = sessionStorage.getItem('asl-intro') === '1'; sessionStorage.setItem('asl-intro', '1'); } catch {}
+    if (seen || matchMedia('(prefers-reduced-motion: reduce)').matches) finish(); else play();
+  }
+</script>

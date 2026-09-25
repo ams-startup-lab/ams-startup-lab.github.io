@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import PubItem from '../components/PubItem.astro';
 import NewsItem from '../components/NewsItem.astro';
+import Intro from '../components/Intro.astro';
 import { siteTexts, publications, news, events, fmtDate } from '../lib';
 const site = await siteTexts();
 const allPubs = await publications();
@@ -10,13 +11,9 @@ const next = (await events()).upcoming[0];
 const latest = allNews[0];
 ---
 <Base>
-  <section class="hero flush">
-    <div class="pitch">
-      <p class="mono">University of Amsterdam · Amsterdam Business School</p>
-      <h1>Research on how startups really work.</h1>
-      <p class="tagline">{site.hero.tagline}</p>
-    </div>
-    <div class="spot">
+  <Intro />
+  {(next || latest) && (
+    <section class="spot">
       {next ? (
         <>
           <p class="mono">Next event · {fmtDate(next.data.date)}</p>
@@ -30,8 +27,8 @@ const latest = allNews[0];
           <a class="mono" href={latest.data.url} rel="noopener">Read →</a>
         </>
       )}
-    </div>
-  </section>
+    </section>
+  )}
 
   <section class="about flush" aria-labelledby="about-h">
     <h2 id="about-h" class="bar mono">{site.about.heading}</h2>
@@ -67,12 +64,8 @@ const latest = allNews[0];
 </Base>
 
 <style>
-  .hero { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); border-bottom: var(--line); }
-  .hero > div { padding: clamp(36px, 6vw, 64px) var(--gutter); }
-  .hero h1 { font-size: clamp(32px, 4.8vw, 56px); margin-top: 16px; max-width: 14ch; }
-  .tagline { margin-top: 20px; max-width: 48ch; color: var(--muted); }
-  .spot { background: var(--hl); color: var(--hl-ink); border-left: var(--line); display: flex; flex-direction: column; justify-content: center; }
-  .spot h2 { font-size: clamp(20px, 2.4vw, 26px); line-height: 1.2; letter-spacing: -0.01em; margin: 12px 0 16px; }
+  .spot { background: var(--hl); color: var(--hl-ink); border-bottom: var(--line); display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 20px; padding-top: 14px; padding-bottom: 14px; }
+  .spot h2 { flex: 1 1 24ch; font-size: 17px; line-height: 1.3; }
   .spot a:hover { background: var(--hl-ink); color: var(--hl); }
   .top { border-top: var(--line); margin-top: -1px; }
   .about { border-bottom: var(--line); }
@@ -87,9 +80,5 @@ const latest = allNews[0];
     .about .cols { grid-template-columns: minmax(0, 1fr); }
     .about .cols > div + div { border-left: 0; border-top: 1px solid var(--rule); }
     .about .cols > div { padding-top: 22px; padding-bottom: 24px; }
-  }
-  @media (max-width: 760px) {
-    .hero { grid-template-columns: minmax(0, 1fr); }
-    .spot { border-left: 0; border-top: var(--line); }
   }
 </style>
