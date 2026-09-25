@@ -91,13 +91,16 @@ const activities = defineCollection({
   schema: z.object({
     title: z.string(),
     kind: z.enum(['teaching', 'service', 'talk']), // teaching and executive education; academic service; talks and expert input
-    year: z.number().int(),
+    year: z.number().int().optional(), // start year; may be left out for a current role whose start is unknown
     until: z.union([z.number().int(), z.literal('present')]).optional(), // for roles or courses that run over several years
     summary: z.string(),
     url: z.string().url().optional(),
     members: z.array(slug).min(1),
     order: z.number().int().default(100),
-  }).strict(),
+  }).strict().refine((a) => a.year || a.until === 'present', {
+    message: 'give a year, or until: present for a current role',
+    path: ['year'],
+  }),
 });
 
 // Organisations the lab has worked with, shown as a logo wall. A partner is listed

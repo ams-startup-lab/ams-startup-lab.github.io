@@ -10,14 +10,14 @@ const people = Object.fromEntries((await getCollection('members')).map((m) => [m
 const names = (ids: string[]) => ids.map((id) => people[id] ?? id).join(', ');
 const { upcoming } = await events();
 const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
-const all = (await getCollection('activities')).sort((a, b) => a.data.order - b.data.order || b.data.year - a.data.year);
+const all = (await getCollection('activities')).sort((a, b) => a.data.order - b.data.order || (b.data.year ?? 9999) - (a.data.year ?? 9999));
 const groups = [
   ['teaching', 'Teaching and executive education'],
   ['service', 'Academic service'],
   ['talk', 'Talks and expert input'],
 ].map(([kind, heading]) => ({ heading, items: all.filter((a) => a.data.kind === kind) }));
-const years = (d: { year: number, until?: number | 'present' }) =>
-  !d.until ? `${d.year}` : d.until === 'present' ? `Since ${d.year}` : `${d.year}–${d.until}`;
+const years = (d: { year?: number, until?: number | 'present' }) =>
+  !d.year ? 'Current' : !d.until ? `${d.year}` : d.until === 'present' ? `Since ${d.year}` : `${d.year}–${d.until}`;
 const preview = import.meta.env.DEV;
 ---
 <Base title="Activities" description={intro.text}>
