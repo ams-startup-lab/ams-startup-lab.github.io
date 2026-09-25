@@ -6,7 +6,7 @@
 // motion start with the strip. A chapter button plays one chapter and pauses at its
 // end; clicking the animation pauses, resumes, or steps to the next chapter.
 const tagline = 'Evidence on what makes startups succeed, scale, or stumble.';
-const chapters = ['Idea', 'People', 'Process', 'Place', 'Lab'];
+const chapters = ['Idea', 'People', 'Process', 'Environment', 'Lab'];
 ---
 <section class="intro flush" aria-label="Animated introduction">
   <div class="fold" id="intro-fold">
@@ -379,7 +379,7 @@ const chapters = ['Idea', 'People', 'Process', 'Place', 'Lab'];
     }
 
     // ---------- text overlays ----------
-    const CAPS = ['Every idea has a starting point.', 'People nurture it', 'and design the processes that shape it.', 'Environments select whether it stumbles or scales.'];
+    const CAPS = ['Every idea has a starting point.', 'People nurture it', 'and design the processes that shape it.', 'Together with its environment, they decide whether it stumbles or scales.'];
     function caption(t: number) {
       let k = 0;
       for (let i = 0; i < 4; i++) if (t >= S[i]) k = i;
