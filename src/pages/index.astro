@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import PubItem from '../components/PubItem.astro';
 import NewsItem from '../components/NewsItem.astro';
+import Intro from '../components/Intro.astro';
 import { siteTexts, publications, news, events, fmtDate } from '../lib';
 const site = await siteTexts();
 const allPubs = await publications();
@@ -10,6 +11,7 @@ const next = (await events()).upcoming[0];
 const latest = allNews[0];
 ---
 <Base>
+  <Intro />
   <section class="hero flush">
     <div class="pitch">
       <p class="mono">University of Amsterdam · Amsterdam Business School</p>
