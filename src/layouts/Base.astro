@@ -7,9 +7,9 @@ const { title, description = site.hero.tagline } = Astro.props;
 const pageTitle = title ? `${title} | ${site.name}` : site.name;
 const hasPartners = (await getCollection('partners')).length > 0;
 const nav = [
-  ['Team', '/team'], ['Publications', '/publications'], ['Projects', '/projects'],
+  ['Team', '/team'], ['Publications', '/publications'], ['Activities', '/activities'],
   ...(hasPartners ? [['Partners', '/partners']] : []),
-  ['News', '/news'], ['Events', '/events'], ['Contact', '/#contact'],
+  ['News', '/news'], ['Contact', '/#contact'],
 ];
 const here = Astro.url.pathname.replace(/\/$/, '') || '/';
 ---
