@@ -1,31 +1,49 @@
 ---
-// Home page hero: a short motion intro drawn on a canvas. An idea becomes a team,
+// Home page intro: a short motion piece drawn on a canvas. An idea becomes a team,
 // a growth curve, a canal street, and finally the lab's name. It plays once per
-// browser session, stops on the title, and can be skipped with a click, a key or
-// a scroll. Visitors who prefer reduced motion see the final frame only.
-// A control bar replays the whole intro or one chapter. The tagline is real text.
+// browser session, then folds into a thin "Replay intro" strip above the hero.
+// Scrolling during that first play folds it at once. Visitors who prefer reduced
+// motion start with the strip. A chapter button plays one chapter and pauses at its
+// end; clicking the animation pauses, resumes, or steps to the next chapter.
 const tagline = 'Evidence on what makes startups succeed, scale, or stumble.';
 const chapters = ['Idea', 'People', 'Process', 'Place', 'Lab'];
 ---
 <section class="intro flush" aria-label="Animated introduction">
-  <div class="stage">
-    <canvas aria-hidden="true"></canvas>
-    <p class="sub"><span class="txt"><span class="full">{tagline}</span><span class="typed" aria-hidden="true"></span></span></p>
-    <div class="ctrl">
-      <p class="cap mono" aria-hidden="true"></p>
-      <div class="btns">
-        {chapters.map((c, k) => <button class="mono ch" type="button" data-k={k} aria-label={`Play from chapter ${k + 1}: ${c}`}>0{k + 1}<span class="nm"> {c}</span></button>)}
-        <button class="mono replay" type="button">Replay ↻</button>
+  <div class="fold" id="intro-fold">
+    <div class="stage">
+      <canvas aria-hidden="true"></canvas>
+      <p class="sub"><span class="txt"><span class="full">{tagline}</span><span class="typed" aria-hidden="true"></span></span></p>
+      <div class="ctrl">
+        <p class="cap mono" aria-hidden="true"></p>
+        <div class="btns">
+          {chapters.map((c, k) => <button class="mono ch" type="button" aria-label={`Play chapter ${k + 1}: ${c}`}>0{k + 1}<span class="nm"> {c}</span></button>)}
+          <button class="mono replay" type="button">Replay ↻</button>
+          <button class="mono close" type="button" aria-label="Close the intro">Close ×</button>
+        </div>
       </div>
     </div>
   </div>
+  <button class="open mono" type="button" aria-controls="intro-fold" aria-expanded="true"><span class="dot"></span><span class="lbl">Replay intro</span></button>
 </section>
+<script is:inline>
+  // Start folded, before the first paint, if the intro already played this session or motion is reduced.
+  try {
+    if (sessionStorage.getItem('asl-intro') === '1' || matchMedia('(prefers-reduced-motion: reduce)').matches)
+      document.currentScript.previousElementSibling.classList.add('closed', 'instant');
+  } catch (e) {}
+</script>
 
 <style>
   .intro { border-bottom: var(--line); }
-  .stage { position: relative; display: grid; container-type: inline-size; }
-  canvas { grid-area: 1 / 1; display: block; width: 100%; aspect-ratio: 1920 / 900; }
-  canvas { cursor: pointer; }
+  .fold { display: grid; grid-template-rows: 1fr; transition: grid-template-rows .6s cubic-bezier(.6, 0, .2, 1); }
+  .intro.closed .fold { grid-template-rows: 0fr; }
+  .intro.instant .fold { transition: none; }
+  .open { display: none; width: 100%; align-items: center; gap: 10px; padding: 10px var(--gutter); background: none; border: 0; color: var(--ink); cursor: pointer; }
+  .intro.closed .open { display: flex; }
+  .open:hover { background: var(--hl); color: var(--hl-ink); }
+  .dot { width: 11px; height: 11px; border-radius: 50%; background: var(--hl); border: 1.5px solid currentColor; }
+  .stage { position: relative; display: grid; min-height: 0; overflow: hidden; container-type: inline-size; }
+  canvas { grid-area: 1 / 1; display: block; width: 100%; aspect-ratio: 1920 / 900; cursor: pointer; }
   /* Positions below are in container width units, so they track the canvas (900/1920 = 46.875cqw tall). */
   .sub { position: absolute; left: 61.5cqw; top: 23.8cqw; width: 32cqw; font-family: var(--monof); font-size: max(13px, 1.75cqw); line-height: 1.45; }
   .sub::before { content: ''; display: block; height: 2px; width: calc(var(--rule-p, 1) * 100%); background: var(--ink); margin-bottom: .8em; }
@@ -39,12 +57,15 @@ const chapters = ['Idea', 'People', 'Process', 'Place', 'Lab'];
   .btns button { font-size: 12px; background: none; border: 0; color: var(--muted); cursor: pointer; padding: 5px 8px; }
   .btns button:hover, .btns .on { background: var(--hl); color: var(--hl-ink); }
   .btns .replay { color: var(--ink); border: 1.5px solid var(--ink); margin-left: 8px; }
+  .btns .close { color: var(--ink); }
+  @media (prefers-reduced-motion: reduce) { .fold { transition: none; } }
   @container (max-width: 699px) {
     /* Phones: caption and tagline take turns in one slot below the canvas; chapters show numbers only. */
     .sub { position: static; grid-area: 2 / 1; width: auto; padding: 14px var(--gutter) 18px; font-size: 14px; }
     .ctrl { display: contents; }
     .cap { grid-area: 2 / 1; align-self: start; padding: 14px var(--gutter); white-space: normal; }
     .btns { grid-area: 3 / 1; padding: 10px var(--gutter); border-top: 1px solid var(--rule); }
+    .btns .replay { margin-left: 4px; }
     .nm { display: none; }
   }
 </style>
@@ -64,8 +85,8 @@ const chapters = ['Idea', 'People', 'Process', 'Place', 'Lab'];
 
     // Logical drawing space: 1920 wide, 900 tall (the scene coordinates run from y = 90 to 990).
     const W = 1920, SH = 900, OY = 90;
-    const S = [0.2, 1.5, 3.2, 5.0, 7.0];   // scene starts: idea, people, process, place, title
-    const T_END = 9.0;
+    const S = [0.2, 1.8, 4.0, 6.0, 8.2];   // scene starts: idea, people, process, place, title
+    const T_END = 10.2;
     const C = { x: 960, y: 540 };
     let BG = '', INK = '', HL = '', HLINK = '', CARD = '', RULE = '', DIP = '', SANS = '', MONO = '';
     let scale = 1;
@@ -206,15 +227,15 @@ const chapters = ['Idea', 'People', 'Process', 'Place', 'Lab'];
 
     // ---------- scenes ----------
     function sceneIdea(t: number) {
-      const a = t - S[0], fade = 1 - seg(t, S[1] - .1, S[1] + .3);
+      const a = t - S[0], fade = 1 - seg(t, S[1], S[1] + .4);
       if (fade <= 0 || a <= 0) return;
       ctx.globalAlpha = fade;
       const L = 880 * eo3(seg(a, .2, .75));
       line(C.x - L, C.y, C.x + L, C.y, RULE, 1.5);
       line(C.x, C.y - L * .45, C.x, C.y + L * .45, RULE, 1.5);
       for (let k = -14; k <= 14; k++) if (k && Math.abs(k * 60) < L) line(C.x + k * 60, C.y - 6, C.x + k * 60, C.y + 6, RULE, 1.5);
-      for (const s of [.45, .75]) {
-        const q = seg(a, s, s + .9);
+      for (const s of [.3, .55]) {
+        const q = seg(a, s, s + .7);
         if (q > 0 && q < 1) { ctx.globalAlpha = fade * (1 - q); circle(C.x, C.y, 56 + 300 * eo3(q), null, INK, 2); }
       }
       ctx.globalAlpha = 1;
@@ -223,7 +244,7 @@ const chapters = ['Idea', 'People', 'Process', 'Place', 'Lab'];
       if (t < S[1] || t > S[2] + .4) return;
       const b = t - S[1], out = eio3(seg(t, S[2], S[2] + .35));
       EDGES.forEach(([i, k, kind], n) => {
-        const st = kind === 'spoke' ? .35 + i * .03 : .7 + n * .025;
+        const st = kind === 'spoke' ? .35 + i * .03 : .7 + n * .018;
         const prog = eo3(seg(b, st, st + .4));
         if (prog <= 0) return;
         const A = nodePos(i, t), B0 = nodePos(k, t);
@@ -234,8 +255,8 @@ const chapters = ['Idea', 'People', 'Process', 'Place', 'Lab'];
     }
     function scenePulses(t: number) {
       const b = t - S[1];
-      if (b < 1 || t > S[2]) return;
-      for (let i = 1; i < N; i++) for (const [st, dir] of [[1 + i * .04, 1], [1.45 + i * .03, -1]]) {
+      if (b < .9 || t > S[2]) return;
+      for (let i = 1; i < N; i++) for (const [st, dir] of [[.9 + i * .03, 1], [1.2 + i * .02, -1]]) {
         const q = seg(b, st, st + .4);
         if (q <= 0 || q >= 1) continue;
         const A = nodePos(0, t), B = nodePos(i, t), e = eio3(q), p = dir > 0 ? e : 1 - e;
@@ -378,7 +399,7 @@ const chapters = ['Idea', 'People', 'Process', 'Place', 'Lab'];
       typedEl.textContent = TAGLINE.slice(0, n);
       if (e > 1.1 && t < T_END && Math.floor(t * 2.5) % 2 === 0) typedEl.append(document.createElement('i'));
       let k = -1;
-      if (playing) for (let i = 0; i < 5; i++) if (t >= S[i] - .2) k = i;
+      if (playing || mode === 'chapter') k = chapterAt(t);
       chBtns.forEach((b, i) => b.classList.toggle('on', i === k));
     }
 
@@ -393,7 +414,16 @@ const chapters = ['Idea', 'People', 'Process', 'Place', 'Lab'];
     }
 
     // ---------- playback ----------
-    let t = 0, playing = false, last = 0;
+    // Animation time runs at SPEED x real time. A full run folds the intro after a short
+    // hold on the title; a chapter run pauses at the chapter's end.
+    const SPEED = .75, HOLD = 2500;
+    const section = stage.closest<HTMLElement>('.intro')!;
+    const fold = section.querySelector<HTMLElement>('.fold')!;
+    const openBtn = section.querySelector<HTMLButtonElement>('.open')!;
+    let t = 0, playing = false, last = 0, stopAt = T_END, mode = 'full', auto = false, foldTimer = 0;
+    const chapterAt = (t: number) => { let k = 0; for (let i = 0; i < 5; i++) if (t >= S[i] - .01) k = i; return k; };
+    const chapterEnd = (k: number) => k < 4 ? S[k + 1] - .02 : T_END;
+
     function fit() {
       const d = Math.min(2, devicePixelRatio || 1), w = cv.getBoundingClientRect().width;
       cv.width = Math.round(w * d); cv.height = Math.round(w * d * SH / W);
@@ -401,32 +431,55 @@ const chapters = ['Idea', 'People', 'Process', 'Place', 'Lab'];
     }
     function tick(now: number) {
       if (!playing) return;
-      t += Math.min(.05, (now - last) / 1000); last = now;   // capped step: a hidden tab resumes where it left off
-      if (t >= T_END) return finish();
+      t = Math.min(stopAt, t + Math.min(.05, (now - last) / 1000) * SPEED); last = now;   // capped step: a hidden tab resumes where it left off
+      if (t >= stopAt) playing = false;
       render(t);
-      requestAnimationFrame(tick);
+      if (playing) requestAnimationFrame(tick);
+      else if (mode === 'full') foldTimer = window.setTimeout(close, HOLD);
     }
-    function play(from = 0) {
-      t = from; playing = true; last = performance.now();
-      stage.classList.add('playing');
-      requestAnimationFrame(tick);
+    function play(from: number, to: number, m: string) {
+      clearTimeout(foldTimer);
+      t = from; stopAt = to; mode = m; resume();
     }
-    function finish() {
-      playing = false; t = T_END;
-      stage.classList.remove('playing');
-      render(t);
+    function resume() { playing = true; last = performance.now(); requestAnimationFrame(tick); }
+    function close() {
+      clearTimeout(foldTimer); playing = false; auto = false;
+      section.classList.add('closed'); fold.inert = true;
+      openBtn.setAttribute('aria-expanded', 'false');
+      openBtn.querySelector('.lbl')!.textContent = 'Replay intro';
     }
-    const skip = () => { if (playing) finish(); };
-    cv.addEventListener('click', () => playing ? finish() : play());
-    for (const ev of ['keydown', 'wheel', 'touchmove', 'scroll']) addEventListener(ev, skip, { passive: true });
-    replay.addEventListener('click', () => play());
-    chBtns.forEach((b, k) => b.addEventListener('click', () => play(k ? S[k] : 0)));
+    function open() {
+      section.classList.remove('closed', 'instant'); fold.inert = false;
+      openBtn.setAttribute('aria-expanded', 'true');
+      play(0, T_END, 'full');
+    }
+
+    // The first automatic play folds as soon as the visitor starts scrolling.
+    const skip = () => { if (auto) close(); };
+    const SCROLL_KEYS = ['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End', ' '];
+    for (const ev of ['wheel', 'touchmove', 'scroll']) addEventListener(ev, skip, { passive: true });
+    addEventListener('keydown', e => { if (SCROLL_KEYS.includes(e.key)) skip(); });
+
+    cv.addEventListener('click', () => {
+      auto = false; clearTimeout(foldTimer);
+      if (playing) { playing = false; render(t); return; }           // pause
+      if (t >= T_END) return play(0, T_END, 'full');                 // replay
+      if (t >= stopAt) { const k = Math.min(4, chapterAt(t) + 1); return play(t, chapterEnd(k), 'chapter'); }   // next chapter
+      resume();
+    });
+    chBtns.forEach((b, k) => b.addEventListener('click', () => { auto = false; play(k ? S[k] : 0, chapterEnd(k), 'chapter'); }));
+    replay.addEventListener('click', () => { auto = false; play(0, T_END, 'full'); });
+    stage.querySelector('.close')!.addEventListener('click', () => { close(); openBtn.focus(); });
+    openBtn.addEventListener('click', open);
     new ResizeObserver(() => { fit(); render(t); }).observe(cv);
     matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { readTheme(); render(t); });
 
     readTheme(); fit();
     let seen = false;
     try { seen = sessionStorage.getItem('asl-intro') === '1'; sessionStorage.setItem('asl-intro', '1'); } catch {}
-    if (seen || matchMedia('(prefers-reduced-motion: reduce)').matches) finish(); else play();
+    if (section.classList.contains('closed')) {
+      t = T_END; mode = 'full'; render(t); close();
+      if (!seen) openBtn.querySelector('.lbl')!.textContent = 'Play intro';
+    } else { auto = true; play(0, T_END, 'full'); }
   }
 </script>
