@@ -72,7 +72,7 @@ const events = defineCollection({
 });
 
 const projects = defineCollection({
-  loader: glob({ pattern: '*.md', base: './data/projects' }),
+  loader: glob({ pattern: '*.yaml', base: './data/projects' }),
   schema: z.object({
     title: z.string(),
     status: z.enum(['active', 'completed']).default('active'),
