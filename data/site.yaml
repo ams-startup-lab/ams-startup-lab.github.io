@@ -1,9 +1,8 @@
 name: Amsterdam Startup Lab
 hero:
-  heading: Welcome to the Amsterdam Startup Lab (ASL)
   tagline: The University of Amsterdam Community Hub for Collaboration with Entrepreneurship Scholars
 about:
-  heading: About Us
+  heading: About us
   labels:
   - Who we are
   - Our mission
@@ -13,18 +12,18 @@ about:
   - 'We produce evidence on what makes startups succeed, scale, or stumble. We work with founders, investors, policymakers, and students to choose research questions that matter in practice, and we share what we find with them.'
   - 'We welcome collaboration with researchers, founders, startup employees, investors, and policymakers. If you have a question, data, or a setting we could study together, get in touch.'
 contact:
-  heading: Contact Us
+  heading: Contact us
   text: Curious about working with us? Just get in touch!
   email: startuplab-abs@uva.nl
   email_href: mailto:startuplab-abs@uva.nl
-  address: Plantage Muidergracht 12, 1018TV, Amsterdam, The Netherlands
+  address: Plantage Muidergracht 12, 1018 TV, Amsterdam, The Netherlands
 page_intros:
   team:
-    heading: Meet the Team
+    heading: Meet the team
     text: The people behind the Amsterdam Startup Lab
   publications:
     heading: Publications
-    text: Recent peer-reviewed work by ASL members
+    text: Selected peer-reviewed work by ASL members
   activities:
     heading: Activities
     text: What we do besides papers, from research projects to teaching, academic service and talks
