@@ -56,6 +56,17 @@ def norm_title(title):
     return re.sub(r"[^a-z0-9]+", " ", (title or "").lower()).strip()
 
 
+def apa_pages(page=None, article_number=None):
+    """Pages in APA 7 form: a range with an en dash ("1269–1289"), or "Article N"
+    for journals that number articles. Returns None when there is nothing to show."""
+    page = str(page or "").strip()
+    if re.search(r"\d\s*[-‐‑–—]\s*\d", page):
+        return re.sub(r"\s*[-‐‑–—]\s*", "–", page)
+    if article_number:
+        return f"Article {str(article_number).strip()}"
+    return page or None
+
+
 def fetch(url, timeout=30, retries=3):
     """GET a URL. Returns (status, final_url, text). Never raises on HTTP errors."""
     last = (0, url, "")

@@ -1,8 +1,10 @@
 """Propose low-risk metadata completions for publications already on the site.
 
-For each publication with a DOI that lacks volume, issue, or pages (or is
-marked in_press), ask Crossref for the current record. Only these fields may
-change through the auto path: status, volume, issue, pages, year.
+For each publication with a DOI, ask Crossref for the current record. Only
+these fields may change through the auto path: status, volume, issue, pages,
+year. Pages are written in APA 7 form (see common.apa_pages). The year is the
+print year: it follows Crossref's published-print year whenever there is one,
+which moves an online-first paper to its print year once it gets a volume.
 
 Usage: python pipeline/refresh_metadata.py
 Output: pipeline/out/metadata_updates.json
@@ -10,15 +12,14 @@ Output: pipeline/out/metadata_updates.json
 import sys
 import urllib.parse
 
-from common import fetch_json, load_yaml_dir, write_out
+from common import apa_pages, fetch_json, load_yaml_dir, write_out
 
 
 def main():
     updates, problems = [], []
     for slug, pub in load_yaml_dir("publications").items():
         doi = pub.get("doi")
-        complete = pub.get("volume") and pub.get("pages") and pub.get("status", "published") == "published"
-        if not doi or complete:
+        if not doi:
             continue
         payload = fetch_json("https://api.crossref.org/works/" + urllib.parse.quote(doi))
         if payload is None:
@@ -26,15 +27,20 @@ def main():
             continue
         record = payload.get("message", {})
         changes = {}
-        for field, key in (("volume", "volume"), ("issue", "issue"), ("pages", "page")):
-            value = record.get(key)
+        found = {
+            "volume": record.get("volume"),
+            "issue": record.get("issue"),
+            "pages": apa_pages(record.get("page"), record.get("article-number")),
+        }
+        for field, value in found.items():
             if value and str(value) != str(pub.get(field) or ""):
                 changes[field] = str(value)
+        year = ((record.get("published-print") or {}).get("date-parts") or [[None]])[0][0]
         if record.get("volume") and pub.get("status") == "in_press":
             changes["status"] = "published"
-            year = ((record.get("published-print") or record.get("published") or {}).get("date-parts") or [[None]])[0][0]
-            if year and year != pub.get("year"):
-                changes["year"] = year
+            year = year or ((record.get("published") or {}).get("date-parts") or [[None]])[0][0]
+        if year and year != pub.get("year"):
+            changes["year"] = year
         if changes:
             updates.append({"file": f"data/publications/{slug}.yaml", "changes": changes})
     write_out("metadata_updates.json", {"updates": updates, "problems": problems})

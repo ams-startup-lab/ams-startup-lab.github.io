@@ -23,7 +23,7 @@ jobs:
       HEAD_SHA: ${{ github.event.pull_request.head.sha }}
       PR: ${{ github.event.pull_request.number }}
     steps:
-      - uses: actions/checkout@v4 # main
+      - uses: actions/checkout@v7 # main
         with:
           fetch-depth: 0
       - run: git fetch origin "$HEAD_SHA"
@@ -31,7 +31,7 @@ jobs:
       # been cut earlier, and commits made on main since then are not its changes.
       - name: Find the merge base
         run: echo "BASE_SHA=$(git merge-base "$BASE_SHA" "$HEAD_SHA")" >> "$GITHUB_ENV"
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - run: pip install -q -r pipeline/requirements.txt
@@ -44,7 +44,7 @@ jobs:
         run: gh pr comment "$PR" --body "Not merged automatically. This change needs a person to review it.$(printf '\n\n```\n'; cat gate.txt; printf '```')"
       - name: Take the data files from the pull request (code stays from main)
         run: git checkout "$HEAD_SHA" -- data
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm

@@ -17,11 +17,11 @@ jobs:
       BASE_SHA: ${{ github.event.pull_request.base.sha }}
       HEAD_SHA: ${{ github.event.pull_request.head.sha }}
     steps:
-      - uses: actions/checkout@v4 # main
+      - uses: actions/checkout@v7 # main
         with:
           fetch-depth: 0
       - run: git fetch origin "$HEAD_SHA"
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - run: pip install -q -r pipeline/requirements.txt
@@ -31,11 +31,25 @@ jobs:
           git diff --name-only --diff-filter=A "$BASE_SHA...$HEAD_SHA" -- data/publications data/news data/events | while read -r f; do
             git show "$HEAD_SHA:$f" > "/tmp/rejected/$(basename "$f")"
           done
-          python pipeline/reject.py /tmp/rejected/*.yaml
-      - name: Commit
+      # Two pull requests closed close together race to push. On a refused push,
+      # start again from the latest main and re-run reject.py, so no rejection is lost.
+      - name: Commit and push
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/rejected.yaml
-          git diff --cached --quiet || git commit -m "Record rejected candidate from #${{ github.event.pull_request.number }}"
-          git push
+          shopt -s nullglob
+          files=(/tmp/rejected/*.yaml)
+          for attempt in 1 2 3 4 5; do
+            git fetch -q origin main
+            git reset -q --hard origin/main
+            python pipeline/reject.py "${files[@]}"
+            git add data/rejected.yaml
+            if git diff --cached --quiet; then echo "Nothing new to record"; exit 0; fi
+            git commit -q -m "Record rejected candidate from #$PR_NUMBER"
+            if git push origin HEAD:main; then exit 0; fi
+            sleep $((attempt * 3))
+          done
+          echo "Could not record the rejection after 5 attempts" >&2
+          exit 1
