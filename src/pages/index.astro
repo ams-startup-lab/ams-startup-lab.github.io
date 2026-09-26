@@ -84,7 +84,10 @@ const parts = (t: string) => { let k = 0; return inline(t).map((p) => ({ ...p, i
   .hero > div { padding: clamp(36px, 6vw, 64px) var(--gutter); }
   .hero h1 { font-size: clamp(32px, 4.8vw, 56px); margin-top: 16px; max-width: 14ch; }
   .tagline { margin-top: 20px; max-width: 48ch; color: var(--muted); }
-  .spot { background: var(--hl); color: var(--hl-ink); border-left: var(--line); display: flex; flex-direction: column; justify-content: center; }
+  .spot { background: linear-gradient(var(--hl), var(--hl)) no-repeat bottom / 100% 100%; color: var(--hl-ink); border-left: var(--line); display: flex; flex-direction: column; justify-content: center; transition: background-size .7s cubic-bezier(.65, 0, .35, 1), color .4s .3s; }
+  /* The yellow drains down out of the news panel as it fills Work with us below (see the script). */
+  .spot.drained { background-size: 100% 0%; color: var(--ink); }
+  .spot.drained :focus-visible { outline-color: var(--ink); }
   .spot h2 { font-size: clamp(20px, 2.4vw, 26px); line-height: 1.2; letter-spacing: -0.01em; margin: 12px 0 16px; }
   .spot a:hover { background: var(--hl-ink); color: var(--hl); }
   .about { border-bottom: var(--line); }
@@ -101,7 +104,9 @@ const parts = (t: string) => { let k = 0; return inline(t).map((p) => ({ ...p, i
      "open" dot, audiences underlined one by one, and a solid call to action. */
   .about .cols > .work { color: var(--hl-ink); background: linear-gradient(var(--hl), var(--hl)) no-repeat left / 100% 100%; transition: background-size 1s cubic-bezier(.65, 0, .25, 1), color .6s .2s; }
   .about .cols > div + div.work { border-left: var(--line); }
-  .about .cols > .work.pre { background-size: 0% 100%; color: var(--ink); }
+  .about .cols > .work.pre { background-size: 0% 100%; color: var(--ink); transition: none; }
+  .about .cols > .work.from-top { background-position: top; transition-delay: .35s, .5s; }
+  .about .cols > .work.pre.from-top { background-size: 100% 0%; }
   .about .work h3 { color: inherit; display: flex; align-items: center; gap: 10px; }
   .pulse { position: relative; width: 10px; height: 10px; border-radius: 50%; background: currentColor; }
   .pulse::after { content: ''; position: absolute; inset: 0; border-radius: 50%; border: 2px solid currentColor; opacity: 0; }
@@ -109,12 +114,13 @@ const parts = (t: string) => { let k = 0; return inline(t).map((p) => ({ ...p, i
   @keyframes ping { from { transform: scale(1); opacity: .9; } to { transform: scale(3); opacity: 0; } }
   .aud { font-weight: 600; background: linear-gradient(color-mix(in srgb, var(--hl-ink) 16%, transparent), color-mix(in srgb, var(--hl-ink) 16%, transparent)) no-repeat 0 88% / 100% .45em; transition: background-size .45s ease-out calc(1s + var(--i) * .22s); }
   .work.pre .aud { background-size: 0% .45em; }
+  .work.from-top .aud { transition-delay: calc(1.3s + var(--i) * .22s); }
   .work a:hover { background: var(--hl-ink); color: var(--hl); }
   .work :focus-visible { outline-color: var(--hl-ink); }
   .work .cta { display: inline-flex; align-items: center; gap: 10px; padding: 12px 18px; background: var(--hl-ink); color: var(--hl); text-decoration: none; font-size: 13px; }
   .work .cta span { transition: transform .2s; }
   .work .cta:hover span { transform: translateX(5px); }
-  @media (prefers-reduced-motion: reduce) { .about .cols > .work, .aud, .work .cta span { transition: none; } .work.seen .pulse::after { animation: none; } }
+  @media (prefers-reduced-motion: reduce) { .spot, .about .cols > .work, .aud, .work .cta span { transition: none; } .work.seen .pulse::after { animation: none; } }
   @media (max-width: 900px) {
     .about .cols { grid-template-columns: minmax(0, 1fr); }
     .about .cols > div + div { border-left: 0; border-top: 1px solid var(--rule); }
@@ -129,13 +135,22 @@ const parts = (t: string) => { let k = 0; return inline(t).map((p) => ({ ...p, i
 
 <script>
   // Play the Work with us sweep once, when the panel is in view (at load or on scroll).
+  // If the yellow news panel is on screen too (wide layouts), the yellow moves: it drains
+  // down out of the news panel and fills Work with us from the top. Otherwise it sweeps in from the left.
   const work = document.querySelector<HTMLElement>('.about .work.pre');
+  const spot = document.querySelector<HTMLElement>('.hero .spot');
   if (work) {
     const io = new IntersectionObserver((entries) => {
       if (!entries[0].isIntersecting) return;
       io.disconnect();
+      const r = spot?.getBoundingClientRect();
+      const transfer = spot && r && r.bottom > 40 && r.top < innerHeight && matchMedia('(min-width: 761px)').matches;
+      if (transfer) work.classList.add('from-top');
       void work.offsetWidth;   // make the browser paint the start state first, or the sweep is skipped at page load
-      requestAnimationFrame(() => requestAnimationFrame(() => { work.classList.remove('pre'); work.classList.add('seen'); }));
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        if (transfer) spot.classList.add('drained');
+        work.classList.remove('pre'); work.classList.add('seen');
+      }));
     }, { threshold: 0.4 });
     io.observe(work);
   }
