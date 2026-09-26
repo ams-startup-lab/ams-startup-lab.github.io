@@ -3,12 +3,16 @@ import Base from '../layouts/Base.astro';
 import PubItem from '../components/PubItem.astro';
 import NewsItem from '../components/NewsItem.astro';
 import Intro from '../components/Intro.astro';
-import { siteTexts, publications, news, events, fmtDate } from '../lib';
+import { getCollection } from 'astro:content';
+import { siteTexts, publications, news, events, fmtDate, inline } from '../lib';
 const site = await siteTexts();
 const allPubs = await publications();
 const allNews = await news();
 const next = (await events()).upcoming[0];
 const latest = allNews[0];
+const hasNetwork = (await getCollection('network')).length > 0;
+const last = site.about.text.length - 1;
+const parts = (t: string) => { let k = 0; return inline(t).map((p) => ({ ...p, i: p.mark ? k++ : 0 })); };
 ---
 <Base>
   <Intro />
@@ -39,14 +43,21 @@ const latest = allNews[0];
     <h2 id="about-h" class="bar mono">{site.about.heading}</h2>
     <div class="cols">
       {site.about.text.map((t: string, i: number) => (
-        <div>
-          <h3 class="mono">{site.about.labels?.[i]}</h3>
-          <p>{t}</p>
+        <div class={i === last ? 'work' : undefined}>
+          <h3 class="mono">{i === last && <span class="pulse" aria-hidden="true"></span>}{site.about.labels?.[i]}</h3>
+          <p>{parts(t).map((p) =>
+            p.href ? (p.href.startsWith('/network/') && !hasNetwork ? p.text : <a href={p.href}>{p.text}</a>)
+            : p.mark ? <span class="aud" style={`--i:${p.i}`}>{p.text}</span>
+            : p.text)}</p>
           {i === 0 && <p class="mono go"><a href="/team/">Meet the team →</a></p>}
-          {i === site.about.text.length - 1 && <p class="mono go"><a href="#contact">Get in touch →</a></p>}
+          {i === last && <p class="mono go"><a class="cta" href="#contact">Get in touch <span aria-hidden="true">→</span></a></p>}
         </div>
       ))}
     </div>
+    <script is:inline>
+      // Hide the Work with us panel before first paint, so its sweep can play (see the script below).
+      if ('IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: reduce)').matches) document.querySelector('.about .work')?.classList.add('pre');
+    </script>
   </section>
 
   <section class="flush">
@@ -85,9 +96,29 @@ const latest = allNews[0];
   .about h3 { color: var(--muted); font-weight: 400; margin-bottom: 12px; }
   .about p { font-size: 16px; line-height: 1.6; }
   .about .go { margin-top: auto; padding-top: 20px; font-size: 12px; }
+
+  /* Work with us: a yellow panel that sweeps in like the intro's highlight, a pulsing
+     "open" dot, audiences underlined one by one, and a solid call to action. */
+  .about .cols > .work { color: var(--hl-ink); background: linear-gradient(var(--hl), var(--hl)) no-repeat left / 100% 100%; transition: background-size 1s cubic-bezier(.65, 0, .25, 1), color .6s .2s; }
+  .about .cols > div + div.work { border-left: var(--line); }
+  .about .cols > .work.pre { background-size: 0% 100%; color: var(--ink); }
+  .about .work h3 { color: inherit; display: flex; align-items: center; gap: 10px; }
+  .pulse { position: relative; width: 10px; height: 10px; border-radius: 50%; background: currentColor; }
+  .pulse::after { content: ''; position: absolute; inset: 0; border-radius: 50%; border: 2px solid currentColor; opacity: 0; }
+  .work.seen .pulse::after { animation: ping 1.8s ease-out .9s 4; }
+  @keyframes ping { from { transform: scale(1); opacity: .9; } to { transform: scale(3); opacity: 0; } }
+  .aud { font-weight: 600; background: linear-gradient(color-mix(in srgb, var(--hl-ink) 16%, transparent), color-mix(in srgb, var(--hl-ink) 16%, transparent)) no-repeat 0 88% / 100% .45em; transition: background-size .45s ease-out calc(1s + var(--i) * .22s); }
+  .work.pre .aud { background-size: 0% .45em; }
+  .work a:hover { background: var(--hl-ink); color: var(--hl); }
+  .work :focus-visible { outline-color: var(--hl-ink); }
+  .work .cta { display: inline-flex; align-items: center; gap: 10px; padding: 12px 18px; background: var(--hl-ink); color: var(--hl); text-decoration: none; font-size: 13px; }
+  .work .cta span { transition: transform .2s; }
+  .work .cta:hover span { transform: translateX(5px); }
+  @media (prefers-reduced-motion: reduce) { .about .cols > .work, .aud, .work .cta span { transition: none; } .work.seen .pulse::after { animation: none; } }
   @media (max-width: 900px) {
     .about .cols { grid-template-columns: minmax(0, 1fr); }
     .about .cols > div + div { border-left: 0; border-top: 1px solid var(--rule); }
+    .about .cols > div + div.work { border-left: 0; border-top: var(--line); }
     .about .cols > div { padding-top: 22px; padding-bottom: 24px; }
   }
   @media (max-width: 760px) {
@@ -95,3 +126,17 @@ const latest = allNews[0];
     .spot { border-left: 0; border-top: var(--line); }
   }
 </style>
+
+<script>
+  // Play the Work with us sweep once, when the panel is in view (at load or on scroll).
+  const work = document.querySelector<HTMLElement>('.about .work.pre');
+  if (work) {
+    const io = new IntersectionObserver((entries) => {
+      if (!entries[0].isIntersecting) return;
+      io.disconnect();
+      void work.offsetWidth;   // make the browser paint the start state first, or the sweep is skipped at page load
+      requestAnimationFrame(() => requestAnimationFrame(() => { work.classList.remove('pre'); work.classList.add('seen'); }));
+    }, { threshold: 0.4 });
+    io.observe(work);
+  }
+</script>
