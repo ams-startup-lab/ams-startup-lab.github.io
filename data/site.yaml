@@ -7,10 +7,11 @@ about:
   - Who we are
   - Our mission
   - Work with us
+  # Inline marks: [label](/path/) makes a link; *words* get the drawn underline in the Work with us column.
   text:
   - 'The Amsterdam Startup Lab (ASL) is a group of entrepreneurship researchers at the Amsterdam Business School, University of Amsterdam. We study startups: the people who start and join them, the processes by which they grow or stall, and the environments they work in.'
   - 'We produce evidence on what makes startups succeed, scale, or stumble. We work with founders, investors, policymakers, and students to choose research questions that matter in practice, and we share what we find with them.'
-  - 'We welcome collaboration with researchers, founders, startup employees, investors, and policymakers. If you have a question, data, or a setting we could study together, get in touch.'
+  - 'We welcome collaboration with *researchers*, *founders*, *startup employees*, *investors*, and *policymakers*. See the [organisations we have worked with](/network/). If you have a question, data, or a setting we could study together, get in touch.'
 contact:
   heading: Contact us
   text: Curious about working with us? Just get in touch!

@@ -3,6 +3,15 @@ import { getCollection, getEntry } from 'astro:content';
 export const fmtDate = (d: Date) =>
   d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
 
+// Inline marks in site texts: [label](/path/) is a link, *words* is a marked phrase.
+export const inline = (s: string) =>
+  s.split(/(\[[^\]]+\]\([^)\s]+\)|\*[^*]+\*)/).filter(Boolean).map((part) => {
+    const link = part.match(/^\[([^\]]+)\]\(([^)\s]+)\)$/);
+    if (link) return { text: link[1], href: link[2] };
+    const mark = part.match(/^\*([^*]+)\*$/);
+    return mark ? { text: mark[1], mark: true } : { text: part };
+  });
+
 export async function siteTexts() {
   return (await getEntry('site', 'site'))!.data as any;
 }
