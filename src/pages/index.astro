@@ -23,7 +23,7 @@ const latest = allNews[0];
         <>
           <p class="mono">Next event · {fmtDate(next.data.date)}</p>
           <h2>{next.data.title}</h2>
-          <a class="mono" href="/activities">Details →</a>
+          <a class="mono" href="/activities/">Details →</a>
         </>
       ) : latest && (
         <>
@@ -42,7 +42,7 @@ const latest = allNews[0];
         <div>
           <h3 class="mono">{site.about.labels?.[i]}</h3>
           <p>{t}</p>
-          {i === 0 && <p class="mono go"><a href="/team">Meet the team →</a></p>}
+          {i === 0 && <p class="mono go"><a href="/team/">Meet the team →</a></p>}
           {i === site.about.text.length - 1 && <p class="mono go"><a href="#contact">Get in touch →</a></p>}
         </div>
       ))}
@@ -50,12 +50,12 @@ const latest = allNews[0];
   </section>
 
   <section class="flush">
-    <div class="bar mono"><h2>Latest publications</h2><a href="/publications">All {allPubs.length} →</a></div>
+    <div class="bar mono"><h2>Latest publications</h2><a href="/publications/">All {allPubs.length} →</a></div>
     <ul>{allPubs.slice(0, 5).map((pub) => <PubItem pub={pub} />)}</ul>
   </section>
 
   <section class="flush">
-    <div class="bar mono top"><h2>News and media</h2><a href="/news">All {allNews.length} →</a></div>
+    <div class="bar mono top"><h2>News and media</h2><a href="/news/">All {allNews.length} →</a></div>
     <ul>{allNews.slice(0, 4).map((item) => <NewsItem item={item} />)}</ul>
   </section>
 
@@ -76,7 +76,6 @@ const latest = allNews[0];
   .spot { background: var(--hl); color: var(--hl-ink); border-left: var(--line); display: flex; flex-direction: column; justify-content: center; }
   .spot h2 { font-size: clamp(20px, 2.4vw, 26px); line-height: 1.2; letter-spacing: -0.01em; margin: 12px 0 16px; }
   .spot a:hover { background: var(--hl-ink); color: var(--hl); }
-  .top { border-top: var(--line); margin-top: -1px; }
   .about { border-bottom: var(--line); }
   .about .bar, .contact .bar { margin: 0; font-weight: 400; }
   .contact .prose { padding: 28px var(--gutter) 40px; font-size: 16px; line-height: 1.6; }

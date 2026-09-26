@@ -2,9 +2,10 @@
 import Base from '../layouts/Base.astro';
 import NewsItem from '../components/NewsItem.astro';
 import { siteTexts, news } from '../lib';
+const intro = (await siteTexts()).page_intros.news;
 const items = await news();
 ---
-<Base title="News and media" description="Amsterdam Startup Lab research in the news.">
-  <section class="page-head"><h1>News and media</h1><p>Lab research in the press, and news from the lab.</p></section>
-  <section class="flush"><ul>{items.map((item) => <NewsItem item={item} summary />)}</ul></section>
+<Base title={intro.heading} description={intro.text}>
+  <section class="page-head"><h1>{intro.heading}</h1><p>{intro.text}</p></section>
+  <section class="flush"><h2 class="sr-only">All news</h2><ul>{items.map((item) => <NewsItem item={item} summary />)}</ul></section>
 </Base>
