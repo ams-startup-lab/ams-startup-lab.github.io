@@ -453,7 +453,10 @@ const chapters = ['Idea', 'People', 'Process', 'Environment', 'Lab'];
     const skip = () => { if (auto) close(); };
     const SCROLL_KEYS = ['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End', ' '];
     for (const ev of ['wheel', 'touchmove', 'scroll']) addEventListener(ev, skip, { passive: true });
-    addEventListener('keydown', e => { if (SCROLL_KEYS.includes(e.key)) skip(); });
+    addEventListener('keydown', e => {
+      if (e.target instanceof Element && e.target.closest('button, a, input, select, textarea')) return;   // Space and Enter on a control act on the control
+      if (SCROLL_KEYS.includes(e.key)) skip();
+    });
 
     cv.addEventListener('click', () => {
       auto = false; clearTimeout(foldTimer);
