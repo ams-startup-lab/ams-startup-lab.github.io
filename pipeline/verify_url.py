@@ -1,7 +1,8 @@
 """Guard against invented or wrong news items.
 
 A news or media item may be proposed only if this script passes it:
-the URL answers with status 200, and the page text names the lab or a member.
+the URL answers with status 200, and the page text names the lab or a member
+(full name, or initial and surname as in "Y. Mei", "L De Cuyper" or "Mei, Y.").
 The title and date printed here come from the page itself. Use them, not
 values from memory.
 
@@ -18,6 +19,16 @@ from common import fetch, load_rejected, load_yaml_dir, norm_url
 LAB_NAMES = ["amsterdam startup lab"]
 META = r'<meta[^>]+(?:property|name)=["\']{}["\'][^>]+content=["\']([^"\']+)'
 DATE_KEYS = ["article:published_time", "og:published_time", "date", "dc.date", "parsely-pub-date"]
+
+
+def name_pattern(name):
+    """Match a member's full name, or the initial-and-surname forms used in lists."""
+    words = name.lower().split()
+    full = r"\s+".join(map(re.escape, words))
+    if len(words) < 2:
+        return re.compile(rf"\b{full}\b")
+    initial, surname = re.escape(words[0][0]), r"\s+".join(map(re.escape, words[1:]))
+    return re.compile(rf"\b(?:{full}|{initial}(?:\.\s*|\s+){surname})\b|\b{surname},\s*{initial}\b")
 
 
 def meta(body, key):
@@ -40,7 +51,7 @@ def check(url, members, known, rejected):
         return result
     text = re.sub(r"<(script|style)\b.*?</\1>", " ", body, flags=re.S | re.I)
     text = html.unescape(re.sub(r"<[^>]+>", " ", text)).lower()
-    named = [slug for slug, m in members.items() if m["name"].lower() in text]
+    named = [slug for slug, m in members.items() if name_pattern(m["name"]).search(text)]
     lab = any(name in text for name in LAB_NAMES)
     if not named and not lab:
         result["reason"] = "page names neither the lab nor a member"
