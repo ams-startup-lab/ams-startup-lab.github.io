@@ -93,6 +93,13 @@ const parts = (t: string) => { let k = 0; return inline(t).map((p) => ({ ...p, i
   .about { border-bottom: var(--line); }
   .about .bar, .contact .bar { margin: 0; font-weight: 400; }
   .contact .prose { padding: 28px var(--gutter) 40px; font-size: 16px; line-height: 1.6; }
+  /* Any link to #contact fills the Contact section with yellow from the top, so it is easy to find (see the script). */
+  .contact { background: linear-gradient(var(--hl), var(--hl)) no-repeat top / 100% 0%; transition: background-size .9s cubic-bezier(.65, 0, .25, 1), color .4s .25s; }
+  .contact.lit { background-size: 100% 100%; color: var(--hl-ink); }
+  .contact.lit .bar { border-bottom-color: var(--hl-ink); }
+  .contact.lit a:hover { background: var(--hl-ink); color: var(--hl); }
+  .contact.lit :focus-visible { outline-color: var(--hl-ink); }
+  .contact.reset { transition: none; }
   .about .cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .about .cols > div { padding: 28px var(--gutter) 32px; display: flex; flex-direction: column; }
   .about .cols > div + div { border-left: 1px solid var(--rule); }
@@ -120,7 +127,7 @@ const parts = (t: string) => { let k = 0; return inline(t).map((p) => ({ ...p, i
   .work .cta { display: inline-flex; align-items: center; gap: 10px; padding: 12px 18px; background: var(--hl-ink); color: var(--hl); text-decoration: none; font-size: 13px; }
   .work .cta span { transition: transform .2s; }
   .work .cta:hover span { transform: translateX(5px); }
-  @media (prefers-reduced-motion: reduce) { .spot, .about .cols > .work, .aud, .work .cta span { transition: none; } .work.seen .pulse::after { animation: none; } }
+  @media (prefers-reduced-motion: reduce) { .spot, .contact, .about .cols > .work, .aud, .work .cta span { transition: none; } .work.seen .pulse::after { animation: none; } }
   @media (max-width: 900px) {
     .about .cols { grid-template-columns: minmax(0, 1fr); }
     .about .cols > div + div { border-left: 0; border-top: 1px solid var(--rule); }
@@ -153,5 +160,28 @@ const parts = (t: string) => { let k = 0; return inline(t).map((p) => ({ ...p, i
       }));
     }, { threshold: 0.4 });
     io.observe(work);
+  }
+
+  // Contact: whenever a link brings the visitor to #contact (from this page or another),
+  // the section fills with yellow once it is on screen. A second click plays it again.
+  const contact = document.getElementById('contact');
+  if (contact) {
+    const light = () => {
+      contact.classList.add('reset'); contact.classList.remove('lit');
+      void contact.offsetWidth;
+      contact.classList.remove('reset');
+      requestAnimationFrame(() => contact.classList.add('lit'));
+    };
+    let wanted = false;
+    const onScreen = () => { const r = contact.getBoundingClientRect(); return r.top < innerHeight * 0.85 && r.bottom > 0; };
+    new IntersectionObserver((entries) => {
+      if (wanted && entries[0].isIntersecting) { wanted = false; light(); }
+    }, { threshold: 0.5 }).observe(contact);
+    const bring = () => { if (onScreen()) { wanted = false; light(); } else wanted = true; };
+    if (location.hash === '#contact') wanted = true;
+    document.addEventListener('click', (e) => {
+      const a = (e.target as Element).closest?.('a[href="#contact"], a[href="/#contact"]');
+      if (a) setTimeout(bring, 50);
+    });
   }
 </script>
