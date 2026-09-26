@@ -1,12 +1,12 @@
 # Handover
 
-Everything needed to run this website is in this repository, except three accounts. To take over, get access to each.
+Everything needed to run this website is in this repository, except the accounts below. To take over, get access to each.
 
 | What | Where | How to transfer |
 | --- | --- | --- |
 | Code, data, workflows | GitHub organization `ams-startup-lab`, repository `ams-startup-lab.github.io` (this name puts the preview at https://ams-startup-lab.github.io/) | Current owner adds you as organization **Owner** |
 | Domain `ams-startup-lab.org` | Wix, domain registration only (the site plan was cancelled on 2026-09-21; Wix hosts nothing) | Transfer the domain to your registrar account, or receive the login. Renews 29 July each year: if it lapses the site dies, so keep auto-renew on |
-| Lab email `startuplab-abs@uva.nl` (display name "Startup Lab ABS") | UvA shared mailbox, created 2026-09-25 through the ABS secretariat (secbs-abs@uva.nl). It opens in the owner's UvA Outlook; no separate login | Ask the ABS secretariat or UvA IT to give you full access and "send as" rights, and to remove the previous owner |
+| Lab email `startuplab-abs@uva.nl` (display name "Startup Lab ABS") | UvA shared mailbox, created 2026-09-25 through the ABS secretariat. It opens in the owner's UvA Outlook; no separate login | Ask the ABS secretariat or UvA IT to give you full access and "send as" rights, and to remove the previous owner |
 | Visitor statistics | GoatCounter account `ams-startup-lab`, dashboard https://ams-startup-lab.goatcounter.com (registered to the current maintainer's email) | Owner adds you as a user under Settings, Users, or changes the account email to yours |
 | Weekly routine | The current maintainer's Claude account, claude.ai/code, Routines | Routines cannot be transferred. Create a new one in your account (below), then the old owner deletes theirs |
 
