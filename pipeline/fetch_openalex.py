@@ -12,7 +12,7 @@ import os
 import sys
 import urllib.parse
 
-from common import (API_KEY_ENV_NAME, fetch_json, load_rejected, load_yaml_dir,
+from common import (API_KEY_ENV_NAME, apa_pages, fetch_json, load_rejected, load_yaml_dir,
                     norm_doi, norm_title, norm_url, write_out)
 
 API = "https://api.openalex.org/works"
@@ -68,7 +68,7 @@ def to_candidate(work):
     if biblio.get("first_page"):
         pages = biblio["first_page"]
         if biblio.get("last_page") and biblio["last_page"] != biblio["first_page"]:
-            pages += f"-{biblio['last_page']}"
+            pages = apa_pages(f"{pages}-{biblio['last_page']}")
     return {
         "openalex_id": work["id"],
         "doi": norm_doi(work.get("doi")),
