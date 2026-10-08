@@ -7,11 +7,24 @@ about:
   - Who we are
   - Our mission
   - Work with us
-  # Inline marks: [label](/path/) makes a link; *words* get the drawn underline in the Work with us column.
+  # Blank lines separate paragraphs; lines starting "1.", "2." form a numbered list.
+  # Inline marks: [label](/path/) makes a link; *words* get the drawn marker in the Work with us column.
   text:
   - 'The Amsterdam Startup Lab (ASL) is a group of entrepreneurship researchers at the Amsterdam Business School, University of Amsterdam. We study startups: the people who start and join them, the processes by which they grow or stall, and the environments they work in.'
-  - 'We produce evidence on what makes startups succeed, scale, or stumble. We work with founders, investors, policymakers, and students to choose research questions that matter in practice, and we share what we find with them.'
-  - 'We welcome collaboration with *researchers*, *founders*, *startup employees*, *investors*, and *policymakers*. See the [organisations we have worked with](/network/). If you have a question, data, or a setting we could study together, get in touch.'
+  - 'We answer real questions about startups with real evidence. We choose those questions together with founders, startup employees, investors and policymakers, so that they matter in practice and advance science. We share what we find with our partners.'
+  - |-
+    Who should we hire next? What do investors really look for? Why are we growing slower than planned?
+
+    Part of the answer to questions like these may be in data you already collect. Analysing it takes time and expertise that a growing company may not have. That is where we come in.
+
+    How it works:
+    1. You bring the question and the data.
+    2. We help you frame the question so that research can answer it. Then we design a rigorous study, built on theory and sound methods.
+    3. You get answers you can act on. We get research worth publishing.
+
+    We work the same way with investors, accelerators, platforms and policymakers. See the [organisations we have worked with](/network/).
+
+    Have a question, data or a setting we could study together? Get in touch.
 contact:
   heading: Contact us
   text: Curious about working with us? Just get in touch!
