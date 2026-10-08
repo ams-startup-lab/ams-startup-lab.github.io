@@ -5,7 +5,7 @@
 // Scrolling during that first play folds it at once. Visitors who prefer reduced
 // motion start with the strip. A chapter button plays one chapter and pauses at its
 // end; clicking the animation pauses, resumes, or steps to the next chapter.
-const tagline = 'Evidence on what makes startups succeed, scale, or stumble.';
+const tagline = 'Real questions. Real evidence.';
 const chapters = ['Idea', 'People', 'Process', 'Environment', 'Lab'];
 ---
 <section class="intro flush" aria-label="Animated introduction">
@@ -47,7 +47,7 @@ const chapters = ['Idea', 'People', 'Process', 'Environment', 'Lab'];
   /* Positions below are in container width units, so they track the canvas (900/1920 = 46.875cqw tall). */
   .sub { position: absolute; left: 61.5cqw; top: 23.8cqw; width: 32cqw; font-family: var(--monof); font-size: max(13px, 1.75cqw); line-height: 1.45; }
   .sub::before { content: ''; display: block; height: 2px; width: calc(var(--rule-p, 1) * 100%); background: var(--ink); margin-bottom: .8em; }
-  .txt { position: relative; display: block; max-width: 25ch; }
+  .txt { position: relative; display: block; max-width: 16ch; }   /* one sentence of the tagline per line */
   .full { color: transparent; }
   .typed { position: absolute; inset: 0; }
   .typed i { display: inline-block; width: .55em; height: 1em; margin-left: .1em; vertical-align: -.15em; background: var(--ink); }

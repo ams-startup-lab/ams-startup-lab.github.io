@@ -12,7 +12,24 @@ const next = (await events()).upcoming[0];
 const latest = allNews[0];
 const hasNetwork = (await getCollection('network')).length > 0;
 const last = site.about.text.length - 1;
-const parts = (t: string) => { let k = 0; return inline(t).map((p) => ({ ...p, i: p.mark ? k++ : 0 })); };
+// An About text in blocks: blank lines separate paragraphs, and lines starting "1.", "2."
+// form a numbered list. Inline marks as in lib.inline; marked phrases are numbered for the marker delay.
+const column = (t: string) => {
+  let k = 0;
+  const parts = (s: string) => inline(s).map((p) => ({ ...p, i: p.mark ? k++ : 0 }));
+  const out: { list: boolean; items: string[] }[] = [];
+  for (const chunk of t.split(/\n\s*\n/)) {
+    let prev: { list: boolean; items: string[] } | undefined;
+    for (const line of chunk.split('\n').map((l) => l.trim()).filter(Boolean)) {
+      const item = line.match(/^\d+\.\s+(.*)$/);
+      if (item && prev?.list) prev.items.push(item[1]);
+      else if (item) out.push(prev = { list: true, items: [item[1]] });
+      else if (prev && !prev.list) prev.items[0] += ' ' + line;
+      else out.push(prev = { list: false, items: [line] });
+    }
+  }
+  return out.map((b) => ({ list: b.list, items: b.items.map(parts) }));
+};
 ---
 <Base>
   <Intro />
@@ -45,10 +62,13 @@ const parts = (t: string) => { let k = 0; return inline(t).map((p) => ({ ...p, i
       {site.about.text.map((t: string, i: number) => (
         <div class={i === last ? 'work' : undefined}>
           <h3 class="mono">{i === last && <span class="pulse" aria-hidden="true"></span>}{site.about.labels?.[i]}</h3>
-          <p>{parts(t).map((p) =>
-            p.href ? (p.href.startsWith('/network/') && !hasNetwork ? p.text : <a href={p.href}>{p.text}</a>)
-            : p.mark ? <span class="aud" style={`--i:${p.i}`}>{p.text}</span>
-            : p.text)}</p>
+          {column(t).map((b) => {
+            const segs = (ps: ReturnType<typeof column>[number]['items'][number]) => ps.map((p) =>
+              p.href ? (p.href.startsWith('/network/') && !hasNetwork ? p.text : <a href={p.href}>{p.text}</a>)
+              : p.mark ? <span class="aud" style={`--i:${p.i}`}>{p.text}</span>
+              : p.text);
+            return b.list ? <ol role="list">{b.items.map((ps) => <li>{segs(ps)}</li>)}</ol> : <p>{segs(b.items[0])}</p>;
+          })}
           {i === 0 && <p class="mono go"><a href="/team/">Meet the team →</a></p>}
           {i === last && <p class="mono go"><a class="cta" href="#contact">Get in touch <span aria-hidden="true">→</span></a></p>}
         </div>
@@ -104,7 +124,13 @@ const parts = (t: string) => { let k = 0; return inline(t).map((p) => ({ ...p, i
   .about .cols > div { padding: 28px var(--gutter) 32px; display: flex; flex-direction: column; }
   .about .cols > div + div { border-left: 1px solid var(--rule); }
   .about h3 { color: var(--muted); font-weight: 400; margin-bottom: 12px; }
-  .about p { font-size: 16px; line-height: 1.6; }
+  .about p, .about ol { font-size: 16px; line-height: 1.6; }
+  .about p + p:not(.go), .about ol + p:not(.go) { margin-top: .8em; }
+  .about p + ol { margin-top: .4em; }
+  .about ol { margin-bottom: 0; padding: 0; list-style: none; counter-reset: step; }
+  .about ol li { counter-increment: step; display: grid; grid-template-columns: 1.8em minmax(0, 1fr); }
+  .about ol li::before { content: counter(step) "."; font-family: var(--monof); font-weight: 600; }
+  .about ol li + li { margin-top: .3em; }
   .about .go { margin-top: auto; padding-top: 20px; font-size: 12px; }
 
   /* Work with us: a yellow panel that sweeps in like the intro's highlight, a pulsing
